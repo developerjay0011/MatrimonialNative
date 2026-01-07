@@ -26,12 +26,12 @@ export function ProgressBar({ currentStep, totalSteps }: ProgressBarProps) {
 const styles = StyleSheet.create({
     container: {
         width: '100%',
-        marginBottom: 24,
+        marginBottom: 20,
     },
     track: {
         width: '100%',
-        height: 4,
-        backgroundColor: '#e5e7eb',
+        height: 3,
+        backgroundColor: '#f3f4f6',
         borderRadius: 2,
         overflow: 'hidden',
     },

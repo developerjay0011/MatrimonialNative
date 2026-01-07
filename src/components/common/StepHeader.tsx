@@ -28,8 +28,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingTop: 16,
-        paddingBottom: 12,
+        paddingTop: 12,
+        paddingBottom: 8,
+        backgroundColor: '#ffffff',
     },
     backButton: {
         width: 40,
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     stepText: {
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: '500',
         color: '#6b7280',
     },

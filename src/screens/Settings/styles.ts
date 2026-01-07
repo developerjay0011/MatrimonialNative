@@ -27,7 +27,7 @@ export const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#9ca3af',
         paddingHorizontal: 16,
-        marginBottom: 8,
+        marginBottom: 24,
         letterSpacing: 0.5,
     },
     sectionContent: {

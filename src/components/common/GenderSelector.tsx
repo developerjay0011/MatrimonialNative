@@ -14,7 +14,7 @@ export function GenderSelector({
     required,
     value,
     onChange,
-    options = ['Male', 'Female']
+    options = ['male', 'female']
 }: GenderSelectorProps) {
     return (
         <View style={styles.container}>
@@ -47,13 +47,13 @@ export function GenderSelector({
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: 16,
+        marginBottom: 18,
     },
     label: {
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: '500',
         color: '#111827',
-        marginBottom: 8,
+        marginBottom: 6,
     },
     required: {
         color: '#ef4444',
@@ -64,17 +64,17 @@ const styles = StyleSheet.create({
     },
     option: {
         flex: 1,
-        paddingVertical: 12,
+        paddingVertical: 13,
         borderWidth: 1,
-        borderColor: '#d1d5db',
-        borderRadius: 8,
+        borderColor: '#e5e7eb',
+        borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#ffffff',
     },
     optionSelected: {
         borderColor: '#f97316',
-        borderWidth: 2,
+        borderWidth: 1.5,
         backgroundColor: '#fff7ed',
     },
     optionText: {

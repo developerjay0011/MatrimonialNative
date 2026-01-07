@@ -13,8 +13,11 @@ import {
     Shield,
     Trash2,
     LogOut,
-    ChevronRight
+    ChevronRight,
+    Users,
+    Images
 } from 'lucide-react-native';
+import LinearGradient from 'react-native-linear-gradient';
 
 interface SettingsScreenProps {
     onBack: () => void;
@@ -27,6 +30,8 @@ interface SettingsScreenProps {
     onSafetyTips: () => void;
     onDeactivate: () => void;
     onLogout: () => void;
+    onFamilyInfo: () => void;
+    onManageGallery: () => void;
 }
 
 export function SettingsScreen({
@@ -39,6 +44,8 @@ export function SettingsScreen({
     onSafetyTips,
     onDeactivate,
     onLogout,
+    onFamilyInfo,
+    onManageGallery,
 }: SettingsScreenProps) {
     const { t } = useTranslation();
     const MenuItem = ({
@@ -75,9 +82,12 @@ export function SettingsScreen({
             barStyle="light-content"
             edges={['right', 'bottom', 'left']}
             headerComponent={(insets) => (
-                <View style={[styles.header, { paddingTop: insets.top + 15 }]}>
+                <LinearGradient
+                    colors={['#f97316', '#ea580c']}
+                    style={[styles.header, { paddingTop: insets.top + 15 }]}
+                >
                     <Text style={styles.title}>{t('settings.title')}</Text>
-                </View>
+                </LinearGradient>
             )}
         >
             <ScrollView style={styles.scrollView}>
@@ -89,6 +99,16 @@ export function SettingsScreen({
                             icon={User}
                             title={t('settings.editProfile')}
                             onPress={onEditProfile}
+                        />
+                        <MenuItem
+                            icon={Users}
+                            title="Family Information"
+                            onPress={onFamilyInfo}
+                        />
+                        <MenuItem
+                            icon={Images}
+                            title="Manage Gallery"
+                            onPress={onManageGallery}
                         />
                         <MenuItem
                             icon={Eye}

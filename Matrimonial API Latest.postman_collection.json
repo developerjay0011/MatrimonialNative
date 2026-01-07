@@ -1,0 +1,833 @@
+{
+	"info": {
+		"_postman_id": "dc379428-514c-4a26-8378-c9087c1f4cce",
+		"name": "Matrimonial API Latest",
+		"description": "Complete API collection for Dhimmar Samaj matrimonial application",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29485601"
+	},
+	"item": [
+		{
+			"name": "User Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data; boundary=<calculated when request is sent>"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "email",
+									"value": "test@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "7990088388",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "Yash@1234",
+									"type": "text"
+								},
+								{
+									"key": "fullName",
+									"value": "Yash",
+									"type": "text"
+								},
+								{
+									"key": "age",
+									"value": "24",
+									"type": "text"
+								},
+								{
+									"key": "dateOfBirth",
+									"value": "2001-01-09",
+									"type": "text"
+								},
+								{
+									"key": "gender",
+									"value": "Male",
+									"type": "text"
+								},
+								{
+									"key": "city",
+									"value": "Navsari",
+									"type": "text"
+								},
+								{
+									"key": "occupation",
+									"value": "Software Engineer",
+									"type": "text"
+								},
+								{
+									"key": "currentState",
+									"value": "Gujarat",
+									"type": "text"
+								},
+								{
+									"key": "photos",
+									"type": "file",
+									"src": "/Users/mac-yash/Downloads/Demo images/orange-train-at-sunset.3840x2160.mp4"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('accessToken', response.data.accessToken);",
+									"    pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+									"    pm.collectionVariables.set('userId', response.data.user.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Password@123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"+919876543210\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/otp/send",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"otp",
+								"send"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"+919876543210\",\n  \"otp\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/otp/verify",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"otp",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/refresh-token",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"refresh-token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile Management",
+			"item": [
+				{
+					"name": "Get My Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/profile/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"profile",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create/Update Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-01-01\",\n  \"gender\": \"male\",\n  \"height\": 175,\n  \"weight\": 70,\n  \"complexion\": \"fair\",\n  \"maritalStatus\": \"never_married\",\n  \"education\": \"Bachelor's Degree\",\n  \"occupation\": \"Software Engineer\",\n  \"currentCity\": \"Mumbai\",\n  \"currentState\": \"Maharashtra\",\n  \"aboutMe\": \"Looking for a life partner\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/profile/create",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"profile",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/profile/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"profile",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Family Details",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fatherName\": \"Father Name\",\n  \"motherName\": \"Mother Name\",\n  \"fatherOccupation\": \"Business\",\n  \"motherOccupation\": \"Housewife\",\n  \"brothers\": 1,\n  \"sisters\": 1,\n  \"familyType\": \"nuclear\",\n  \"familyValues\": \"moderate\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/profile/family",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"profile",
+								"family"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Photo Management",
+			"item": [
+				{
+					"name": "Upload Photo",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "photo",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "isProfilePhoto",
+									"value": "true",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/photos/upload",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"photos",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Photos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/photos/my-photos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"photos",
+								"my-photos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Photos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/photos/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"photos",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Matches & Discovery",
+			"item": [
+				{
+					"name": "Get Match Suggestions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/matches/suggestions?page=1&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"matches",
+								"suggestions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Nearby Matches",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/matches/nearby",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"matches",
+								"nearby"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Shortlist Match",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/matches/{{userId}}/shortlist",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"matches",
+								"{{userId}}",
+								"shortlist"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Interest Management",
+			"item": [
+				{
+					"name": "Send Interest",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"toUserId\": \"{{userId}}\",\n  \"message\": \"Hi, I would like to connect with you.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/interests/send",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"interests",
+								"send"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sent Interests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/interests/sent",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"interests",
+								"sent"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Received Interests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/interests/received",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"interests",
+								"received"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Chat & Messaging",
+			"item": [
+				{
+					"name": "Get All Chats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/chats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"chatId\": \"chat-uuid\",\n  \"content\": \"Hello, how are you?\",\n  \"messageType\": \"text\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chats/messages",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chats",
+								"messages"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Search & Filters",
+			"item": [
+				{
+					"name": "Advanced Search",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"ageMin\": 25,\n  \"ageMax\": 35,\n  \"heightMin\": 160,\n  \"heightMax\": 180,\n  \"maritalStatus\": [\"never_married\"],\n  \"education\": [\"Bachelor's Degree\"],\n  \"location\": [\"Mumbai\", \"Delhi\"],\n  \"page\": 1,\n  \"limit\": 20\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/search",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Filter Options",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/search/filters/options",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search",
+								"filters",
+								"options"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin Authentication",
+			"item": [
+				{
+					"name": "Admin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('accessToken', response.data.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin User Management",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/users?page=1&limit=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dashboard Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/admin/users/dashboard/stats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"users",
+								"dashboard",
+								"stats"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Utility Endpoints",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "API Documentation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api-docs",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api-docs"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

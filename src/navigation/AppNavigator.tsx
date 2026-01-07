@@ -15,40 +15,24 @@ import { NotificationsScreen } from '../screens/Notifications';
 import { LanguageScreen } from '../screens/Language';
 import { HelpSupportScreen } from '../screens/HelpSupport';
 import { SafetyTipsScreen } from '../screens/SafetyTips';
+import { FamilyInfoScreen } from '../screens/FamilyInfo';
+import { ManageGalleryScreen } from '../screens/ManageGallery';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function AppNavigator() {
-    const [showSplash, setShowSplash] = useState(true);
     const [currentUser, setCurrentUser] = useState<any>(null);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setShowSplash(false);
-        }, 2500);
-
-        return () => clearTimeout(timer);
-    }, []);
-
-    if (showSplash) {
-        return <SplashScreen />;
-    }
 
     return (
         <Stack.Navigator
-            initialRouteName={currentUser ? "Home" : "Login"}
-            screenOptions={{
-                headerShown: false,
-            }}
+            initialRouteName="Splash"
+            screenOptions={{ headerShown: false }}
         >
+            <Stack.Screen name="Splash" component={SplashScreen} />
             <Stack.Screen name="Login">
                 {(props) => (
                     <LoginScreen
                         {...props}
-                        onLogin={(userData) => {
-                            setCurrentUser(userData);
-                            props.navigation.replace('Home');
-                        }}
                         onRegister={() => props.navigation.navigate('Registration')}
                     />
                 )}
@@ -58,10 +42,6 @@ export function AppNavigator() {
                 {(props) => (
                     <RegistrationFlow
                         {...props}
-                        onComplete={(userData) => {
-                            setCurrentUser(userData);
-                            props.navigation.replace('Home');
-                        }}
                         onBack={() => props.navigation.goBack()}
                     />
                 )}
@@ -75,6 +55,8 @@ export function AppNavigator() {
                         onOpenChat={(profileId) => props.navigation.navigate('Chat', { profileId })}
                         onOpenSettings={() => { }}
                         onEditProfile={() => props.navigation.navigate('EditProfile')}
+                        onFamilyInfo={() => props.navigation.navigate('FamilyInfo')}
+                        onManageGallery={() => props.navigation.navigate('ManageGallery')}
                         onProfileVisibility={() => props.navigation.navigate('ProfileVisibility')}
                         onPrivacySettings={() => props.navigation.navigate('PrivacySettings')}
                         onNotifications={() => props.navigation.navigate('Notifications')}
@@ -172,6 +154,24 @@ export function AppNavigator() {
             <Stack.Screen name="SafetyTips">
                 {(props) => (
                     <SafetyTipsScreen
+                        {...props}
+                        onBack={() => props.navigation.goBack()}
+                    />
+                )}
+            </Stack.Screen>
+
+            <Stack.Screen name="FamilyInfo">
+                {(props) => (
+                    <FamilyInfoScreen
+                        {...props}
+                        onBack={() => props.navigation.goBack()}
+                    />
+                )}
+            </Stack.Screen>
+
+            <Stack.Screen name="ManageGallery">
+                {(props) => (
+                    <ManageGalleryScreen
                         {...props}
                         onBack={() => props.navigation.goBack()}
                     />

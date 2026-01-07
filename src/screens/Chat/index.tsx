@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { ArrowLeft, Send, MoreVertical } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { CustomSafeAreaView } from '../../components/CustomSafeAreaView';
@@ -61,71 +61,64 @@ export function ChatScreen({ profileId, onBack }: ChatScreenProps) {
                 </View>
             )}
         >
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={0}
-            >
-
-                {/* Messages */}
-                <ScrollView style={styles.messagesContainer} contentContainerStyle={styles.messagesContent}>
-                    {messages.map((msg) => (
+            {/* Messages */}
+            <ScrollView style={styles.messagesContainer} contentContainerStyle={styles.messagesContent}>
+                {messages.map((msg) => (
+                    <View
+                        key={msg.id}
+                        style={[
+                            styles.messageRow,
+                            msg.sender === 'me' ? styles.messageRowMe : styles.messageRowThem
+                        ]}
+                    >
+                        {msg.sender === 'them' && (
+                            <Image source={{ uri: profile.profilePhoto }} style={styles.messageAvatar} />
+                        )}
                         <View
-                            key={msg.id}
                             style={[
-                                styles.messageRow,
-                                msg.sender === 'me' ? styles.messageRowMe : styles.messageRowThem
+                                styles.messageBubble,
+                                msg.sender === 'me' ? styles.messageBubbleMe : styles.messageBubbleThem
                             ]}
                         >
-                            {msg.sender === 'them' && (
-                                <Image source={{ uri: profile.profilePhoto }} style={styles.messageAvatar} />
-                            )}
-                            <View
+                            <Text
                                 style={[
-                                    styles.messageBubble,
-                                    msg.sender === 'me' ? styles.messageBubbleMe : styles.messageBubbleThem
+                                    styles.messageText,
+                                    msg.sender === 'me' ? styles.messageTextMe : styles.messageTextThem
                                 ]}
                             >
-                                <Text
-                                    style={[
-                                        styles.messageText,
-                                        msg.sender === 'me' ? styles.messageTextMe : styles.messageTextThem
-                                    ]}
-                                >
-                                    {msg.text}
-                                </Text>
-                                <Text
-                                    style={[
-                                        styles.messageTime,
-                                        msg.sender === 'me' ? styles.messageTimeMe : styles.messageTimeThem
-                                    ]}
-                                >
-                                    {msg.time}
-                                </Text>
-                            </View>
+                                {msg.text}
+                            </Text>
+                            <Text
+                                style={[
+                                    styles.messageTime,
+                                    msg.sender === 'me' ? styles.messageTimeMe : styles.messageTimeThem
+                                ]}
+                            >
+                                {msg.time}
+                            </Text>
                         </View>
-                    ))}
-                </ScrollView>
+                    </View>
+                ))}
+            </ScrollView>
 
-                {/* Input */}
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        value={message}
-                        onChangeText={setMessage}
-                        placeholder={t('chats.typeMessage')}
-                        placeholderTextColor="#9ca3af"
-                        style={styles.input}
-                        multiline
-                    />
-                    <TouchableOpacity
-                        onPress={handleSend}
-                        style={[styles.sendButton, !message.trim() && styles.sendButtonDisabled]}
-                        disabled={!message.trim()}
-                    >
-                        <Send size={20} color="#ffffff" />
-                    </TouchableOpacity>
-                </View>
-            </KeyboardAvoidingView>
+            {/* Input */}
+            <View style={styles.inputContainer}>
+                <TextInput
+                    value={message}
+                    onChangeText={setMessage}
+                    placeholder={t('chats.typeMessage')}
+                    placeholderTextColor="#9ca3af"
+                    style={styles.input}
+                    multiline
+                />
+                <TouchableOpacity
+                    onPress={handleSend}
+                    style={[styles.sendButton, !message.trim() && styles.sendButtonDisabled]}
+                    disabled={!message.trim()}
+                >
+                    <Send size={20} color="#ffffff" />
+                </TouchableOpacity>
+            </View>
         </CustomSafeAreaView>
     );
 }

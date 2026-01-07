@@ -1,11 +1,16 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { ArrowLeft, Heart, MessageCircle, MapPin, Briefcase } from "lucide-react-native";
 import { useTranslation } from 'react-i18next';
 import { CustomSafeAreaView } from '../../components/CustomSafeAreaView';
 import { getProfileById } from "../../data/mockProfiles";
 import { styles } from './styles';
+import { getUserProfile } from '../../redux/actions/profile';
+import { sendInterest } from '../../redux/actions/interests';
+import { createChat } from '../../redux/actions/chat';
+import { showToast } from '../../utils/toast';
+import { SkeletonProfileDetail } from '../../components/skeletons';
 
 interface ProfileDetailScreenProps {
     profileId: string;
@@ -19,7 +24,73 @@ export function ProfileDetailScreen({
     onOpenChat,
 }: ProfileDetailScreenProps) {
     const { t } = useTranslation();
-    const profile = getProfileById(profileId);
+    const [profile, setProfile] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [sendingInterest, setSendingInterest] = useState(false);
+
+    useEffect(() => {
+        fetchProfile();
+    }, [profileId]);
+
+    const fetchProfile = async () => {
+        try {
+            setLoading(true);
+            const response = await getUserProfile(profileId);
+            if (response.success && response.data) {
+                setProfile(response.data);
+            } else {
+                setProfile(getProfileById(profileId));
+            }
+        } catch (error) {
+            setProfile(getProfileById(profileId));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSendInterest = async () => {
+        try {
+            setSendingInterest(true);
+            const response = await sendInterest(profileId, 'I am interested in connecting with you!');
+            if (response.success) {
+                showToast('Interest sent successfully!', { type: 'success' });
+            } else {
+                showToast(response.message || 'Failed to send interest', { type: 'error' });
+            }
+        } catch (error: any) {
+            showToast(error?.message || 'Failed to send interest', { type: 'error' });
+        } finally {
+            setSendingInterest(false);
+        }
+    };
+
+    const handleStartChat = async () => {
+        try {
+            const response = await createChat(profileId);
+            if (response.success && response.data) {
+                onOpenChat(response.data._id || profileId);
+            } else {
+                onOpenChat(profileId);
+            }
+        } catch (error) {
+            onOpenChat(profileId);
+        }
+    };
+
+    if (loading) {
+        return (
+            <CustomSafeAreaView
+                barColor="#f9fafb"
+                barStyle="dark-content"
+                edges={['top', 'right', 'bottom', 'left']}
+                style={styles.container}
+            >
+                <ScrollView>
+                    <SkeletonProfileDetail />
+                </ScrollView>
+            </CustomSafeAreaView>
+        );
+    }
 
     if (!profile) {
         return (
@@ -45,7 +116,7 @@ export function ProfileDetailScreen({
                 {/* Header Image */}
                 <View style={styles.imageContainer}>
                     <Image
-                        source={{ uri: profile.profilePhoto }}
+                        source={{ uri: profile.profilePhoto || profile.photos?.[0]?.url }}
                         style={styles.profileImage}
                         resizeMode="contain"
                     />
@@ -74,7 +145,7 @@ export function ProfileDetailScreen({
                             <View style={styles.nameContainer}>
                                 <View style={styles.nameRow}>
                                     <Text style={styles.name}>
-                                        {profile.name}, {profile.age}
+                                        {profile.name || profile.fullName}, {profile.age}
                                     </Text>
                                     {profile.verified && (
                                         <View style={styles.verifiedBadge}>
@@ -172,13 +243,23 @@ export function ProfileDetailScreen({
 
             {/* Action Buttons */}
             <View style={styles.actionButtons}>
-                <TouchableOpacity style={styles.interestButton}>
-                    <Heart size={20} color="#ffffff" />
-                    <Text style={styles.interestButtonText}>{t('profile.sendInterest')}</Text>
+                <TouchableOpacity
+                    style={styles.interestButton}
+                    onPress={handleSendInterest}
+                    disabled={sendingInterest}
+                >
+                    {sendingInterest ? (
+                        <ActivityIndicator size="small" color="#ffffff" />
+                    ) : (
+                        <>
+                            <Heart size={20} color="#ffffff" />
+                            <Text style={styles.interestButtonText}>{t('profile.sendInterest')}</Text>
+                        </>
+                    )}
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.chatButton}
-                    onPress={() => onOpenChat(profileId)}
+                    onPress={handleStartChat}
                 >
                     <MessageCircle size={20} color="#ffffff" />
                     <Text style={styles.chatButtonText}>{t('profile.startChat')}</Text>

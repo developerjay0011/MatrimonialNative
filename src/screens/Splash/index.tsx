@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -12,6 +12,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
 import { CustomSafeAreaView } from '../../components/CustomSafeAreaView';
+import { styles } from './styles';
+import { StorageService } from '../../utils/storage';
+import { replace } from '../../navigation/RootNavigation';
 
 export function SplashScreen() {
   // Animation values
@@ -44,6 +47,17 @@ export function SplashScreen() {
 
     // Footer entry
     footerOpacity.value = withDelay(1000, withTiming(1));
+
+    (async () => {
+      const token = await StorageService.getAccessToken()
+      setTimeout(() => {
+        if (token) {
+          replace('Home')
+        } else {
+          replace('Login')
+        }
+      }, 1000);
+    })()
   }, []);
 
   // Styles
@@ -73,37 +87,36 @@ export function SplashScreen() {
     <CustomSafeAreaView
       barColor="#f97316"
       barStyle="light-content"
-      style={{ flex: 1 }}
+      style={styles.safeArea}
       edges={['right', 'left']}
       headerComponent={(insets) => (
         <LinearGradient
           colors={['#f97316', '#ea580c']}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, height: insets.top }}
+          style={[styles.headerGradient, { height: insets.top }]}
         />
       )}
     >
       <LinearGradient
         colors={['#f97316', '#ea580c']}
-        style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+        style={styles.mainGradient}
       >
-        <Animated.View style={[containerStyle, { alignItems: 'center' }]}>
+        <Animated.View style={[containerStyle, styles.container]}>
           {/* Logo Icon */}
-          <Animated.View style={[iconStyle, { marginBottom: 24 }]}>
-            <View className="w-24 h-24 bg-white rounded-full items-center justify-center shadow-2xl">
-              <Text style={{ fontSize: 48 }}>❤️</Text>
+          <Animated.View style={[iconStyle, styles.iconWrapper]}>
+            <View style={styles.logoCircle}>
+              <Text style={styles.logoEmoji}>❤️</Text>
             </View>
           </Animated.View>
 
           {/* App Name */}
           <Animated.Text
-            style={[titleStyle, { fontSize: 36, fontWeight: '600', color: 'white', marginBottom: 8 }]}
+            style={[titleStyle, styles.title]}
           >
             Dhimmar Samaj
           </Animated.Text>
 
-          <Animated.Text
-            style={[subtitleStyle, { color: 'rgba(255,255,255,0.9)', fontSize: 16 }]}
-          >
+          {/* Tagline */}
+          <Animated.Text style={[subtitleStyle, styles.subtitle]}>
             Find Your Perfect Match
           </Animated.Text>
 
@@ -113,8 +126,8 @@ export function SplashScreen() {
         </Animated.View>
 
         {/* Bottom Text */}
-        <Animated.View style={[footerStyle, { position: 'absolute', bottom: 32 }]}>
-          <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>Connecting Hearts, Building Futures</Text>
+        <Animated.View style={[footerStyle, styles.footer]}>
+          <Text style={styles.footerText}>Connecting Hearts, Building Futures</Text>
         </Animated.View>
       </LinearGradient>
     </CustomSafeAreaView>
@@ -126,7 +139,7 @@ function LoadingDots({ delay }: { delay: number }) {
   return (
     <Animated.View
       entering={FadeIn.delay(delay)}
-      className="mt-12 flex-row gap-2"
+      style={styles.loadingDotsContainer}
     >
       {[0, 1, 2].map((i) => (
         <Dot key={i} index={i} />
@@ -153,6 +166,6 @@ function Dot({ index }: { index: number }) {
   }));
 
   return (
-    <Animated.View style={[style, { width: 8, height: 8, backgroundColor: 'white', borderRadius: 4, marginHorizontal: 2 }]} />
+    <Animated.View style={[style, styles.dot]} />
   );
 }

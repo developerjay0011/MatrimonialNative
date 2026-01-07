@@ -1,11 +1,14 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, StatusBar } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, RefreshControl } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Search, MoreVertical } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { CustomSafeAreaView } from '../../components/CustomSafeAreaView';
 import { mockProfiles } from '../../data/mockProfiles';
 import { styles } from './styles';
+import { getAllChats } from '../../redux/actions/chat';
+import { SkeletonChatList } from '../../components/skeletons';
+import { useIsFocused } from '@react-navigation/native';
 
 interface ChatsListScreenProps {
     onBack: () => void;
@@ -14,24 +17,63 @@ interface ChatsListScreenProps {
 
 export function ChatsListScreen({ onOpenChat }: ChatsListScreenProps) {
     const { t } = useTranslation();
-    const [searchQuery, setSearchQuery] = React.useState('');
+    const isFocused = useIsFocused();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [chats, setChats] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
-    // Mock chat data
-    const chats = mockProfiles.slice(0, 5).map((profile, index) => ({
-        id: profile.id,
-        name: profile.name,
-        photo: profile.profilePhoto,
-        lastMessage: index === 0 ? "That sounds great! Whe..." : index === 1 ? "Thank you for your interest. I..." : "Yes, I'm interested in con...",
-        time: index === 0 ? "2m ago" : index === 1 ? "1h ago" : "Yesterday",
-        unread: index === 0 || index === 2,
-        city: profile.city,
-        occupation: profile.occupation,
-        online: profile.online,
-    }));
+    useEffect(() => {
+        if (isFocused) {
+            fetchChats()
+        }
+    }, [isFocused]);
 
-    const filteredChats = chats.filter(chat =>
-        chat.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const fetchChats = async () => {
+        try {
+            setLoading(true);
+            const response = await getAllChats();
+            if (response.success && response.data?.chats) {
+                setChats(response.data.chats);
+            } else {
+                // Fallback to mock data
+                const mockChats = mockProfiles.slice(0, 5).map((profile, index) => ({
+                    _id: profile.id,
+                    id: profile.id,
+                    participants: [{ name: profile.name, profilePhoto: profile.profilePhoto }],
+                    lastMessage: { content: index === 0 ? "That sounds great! Whe..." : index === 1 ? "Thank you for your interest. I..." : "Yes, I'm interested in con..." },
+                    updatedAt: new Date().toISOString(),
+                    unreadCount: index === 0 || index === 2 ? 2 : 0,
+                }));
+                setChats(mockChats);
+            }
+        } catch (error) {
+            // Fallback to mock data on error
+            const mockChats = mockProfiles.slice(0, 5).map((profile, index) => ({
+                _id: profile.id,
+                id: profile.id,
+                participants: [{ name: profile.name, profilePhoto: profile.profilePhoto }],
+                lastMessage: { content: index === 0 ? "That sounds great! Whe..." : index === 1 ? "Thank you for your interest. I..." : "Yes, I'm interested in con..." },
+                updatedAt: new Date().toISOString(),
+                unreadCount: index === 0 || index === 2 ? 2 : 0,
+            }));
+            setChats(mockChats);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        fetchChats();
+    };
+
+    const filteredChats = chats.filter(chat => {
+        const participant = chat.participants?.[0];
+        const name = participant?.name || participant?.fullName || '';
+        return name.toLowerCase().includes(searchQuery.toLowerCase());
+    });
 
     return (
         <CustomSafeAreaView
@@ -60,40 +102,59 @@ export function ChatsListScreen({ onOpenChat }: ChatsListScreenProps) {
             )}
         >
             {/* Chat List */}
-            <ScrollView style={styles.scrollView}>
-                {filteredChats.map((chat) => (
-                    <TouchableOpacity
-                        key={chat.id}
-                        style={styles.chatItem}
-                        onPress={() => onOpenChat(chat.id)}
-                    >
-                        <View style={styles.avatarContainer}>
-                            <Image source={{ uri: chat.photo }} style={styles.avatar} />
-                            {chat.online && <View style={styles.onlineBadge} />}
-                        </View>
+            <ScrollView
+                style={styles.scrollView}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#f97316" />}
+            >
+                {loading ? (
+                    <SkeletonChatList count={6} />
+                ) : filteredChats.length === 0 ? (
+                    <View style={{ padding: 40, alignItems: 'center' }}>
+                        <Text style={{ color: '#6b7280', fontSize: 16 }}>No chats yet</Text>
+                        <Text style={{ color: '#9ca3af', fontSize: 14, marginTop: 8 }}>Start connecting with matches!</Text>
+                    </View>
+                ) : (
+                    filteredChats.map((chat: any) => {
+                        const participant = chat.participants?.[0] || {};
+                        const chatName = participant.name || participant.fullName || 'Unknown';
+                        const chatPhoto = participant.profilePhoto || participant.photos?.[0]?.url;
+                        const lastMsg = chat.lastMessage?.content || 'No messages yet';
+                        const timeAgo = chat.updatedAt ? new Date(chat.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
-                        <View style={styles.chatContent}>
-                            <View style={styles.chatHeader}>
-                                <Text style={styles.chatName}>{chat.name}</Text>
-                                <Text style={styles.chatTime}>{chat.time}</Text>
-                            </View>
-                            <Text style={styles.chatLocation}>{chat.city} • {chat.occupation}</Text>
-                            <Text style={styles.chatMessage} numberOfLines={1}>
-                                {chat.lastMessage}
-                            </Text>
-                        </View>
+                        return (
+                            <TouchableOpacity
+                                key={chat._id || chat.id}
+                                style={styles.chatItem}
+                                onPress={() => onOpenChat(chat._id || chat.id)}
+                            >
+                                <View style={styles.avatarContainer}>
+                                    <Image source={{ uri: chatPhoto }} style={styles.avatar} />
+                                    {participant.online && <View style={styles.onlineBadge} />}
+                                </View>
 
-                        {chat.unread && (
-                            <View style={styles.unreadBadge}>
-                                <Text style={styles.unreadText}>2</Text>
-                            </View>
-                        )}
+                                <View style={styles.chatContent}>
+                                    <View style={styles.chatHeader}>
+                                        <Text style={styles.chatName}>{chatName}</Text>
+                                        <Text style={styles.chatTime}>{timeAgo}</Text>
+                                    </View>
+                                    <Text style={styles.chatMessage} numberOfLines={1}>
+                                        {lastMsg}
+                                    </Text>
+                                </View>
 
-                        <TouchableOpacity style={styles.moreButton}>
-                            <MoreVertical size={20} color="#9ca3af" />
-                        </TouchableOpacity>
-                    </TouchableOpacity>
-                ))}
+                                {chat.unreadCount > 0 && (
+                                    <View style={styles.unreadBadge}>
+                                        <Text style={styles.unreadText}>{chat.unreadCount}</Text>
+                                    </View>
+                                )}
+
+                                <TouchableOpacity style={styles.moreButton}>
+                                    <MoreVertical size={20} color="#9ca3af" />
+                                </TouchableOpacity>
+                            </TouchableOpacity>
+                        );
+                    })
+                )}
             </ScrollView>
         </CustomSafeAreaView>
     );

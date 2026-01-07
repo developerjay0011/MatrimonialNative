@@ -16,4 +16,6 @@ export type RootStackParamList = {
     Language: undefined;
     HelpSupport: undefined;
     SafetyTips: undefined;
+    FamilyInfo: undefined;
+    ManageGallery: undefined;
 };

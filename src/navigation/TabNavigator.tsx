@@ -16,6 +16,8 @@ interface TabNavigatorProps {
     onOpenChat: (profileId: string) => void;
     onOpenSettings: () => void;
     onEditProfile: () => void;
+    onFamilyInfo: () => void;
+    onManageGallery: () => void;
     onProfileVisibility: () => void;
     onPrivacySettings: () => void;
     onNotifications: () => void;
@@ -31,6 +33,8 @@ export function TabNavigator({
     onViewProfile,
     onOpenChat,
     onEditProfile,
+    onFamilyInfo,
+    onManageGallery,
     onProfileVisibility,
     onPrivacySettings,
     onNotifications,
@@ -149,6 +153,8 @@ export function TabNavigator({
                         {...props}
                         onBack={() => props.navigation.navigate('HomeTab')}
                         onEditProfile={onEditProfile}
+                        onFamilyInfo={onFamilyInfo}
+                        onManageGallery={onManageGallery}
                         onProfileVisibility={onProfileVisibility}
                         onPrivacySettings={onPrivacySettings}
                         onNotifications={onNotifications}
