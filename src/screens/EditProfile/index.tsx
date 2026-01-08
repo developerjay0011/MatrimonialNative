@@ -1,5 +1,6 @@
+import moment from 'moment';
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, Image, StatusBar, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { ArrowLeft, Upload, Camera } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -10,22 +11,31 @@ import { uploadPhoto } from '../../redux/actions/photos';
 import { showToast } from '../../utils/toast';
 import { pickSinglePhoto } from '../../utils/photoUpload';
 import { useIsFocused } from '@react-navigation/native';
-import { goBack } from '../../navigation/RootNavigation';
+import { DatePickerInput } from '../../components/common/DatePickerInput';
+import { FormInput } from '../../components/common/FormInput';
+import { DropdownPickerInput } from '../../components/common/DropdownPickerInput';
+import { FormSkeleton } from '../../components/skeletons/FormSkeleton';
+import { useAppDispatch } from '../../redux/hooks';
 
 interface EditProfileScreenProps {
     onBack: () => void;
     currentUser: any;
 }
 
+const MARITAL_STATUS_OPTIONS = [
+    { label: 'Never Married', value: 'never_married' },
+    { label: 'Divorced', value: 'divorced' },
+    { label: 'Widowed', value: 'widowed' },
+];
+
 export function EditProfileScreen({ onBack, currentUser }: EditProfileScreenProps) {
     const { t } = useTranslation();
     const isFocused = useIsFocused();
-    const [loading, setLoading] = useState(true);
+    const dispatch = useAppDispatch();
     const [saving, setSaving] = useState(false);
-    const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
+        fullName: '',
         email: '',
         phone: '',
         dateOfBirth: '',
@@ -34,86 +44,140 @@ export function EditProfileScreen({ onBack, currentUser }: EditProfileScreenProp
         maritalStatus: '',
         education: '',
         occupation: '',
-        income: '',
         city: '',
         state: '',
-        diet: '',
         religion: '',
         motherTongue: '',
         aboutMe: '',
+        gender: '',
+        age: '',
     });
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (isFocused) {
-            fetchProfile()
-        }
-    }, [isFocused]);
-
-    const fetchProfile = async () => {
-        try {
-            setLoading(true);
-            const response = await getMyProfile();
-            if (response.success && response.data) {
-                const profile = response.data;
-                setFormData({
-                    firstName: profile.firstName || '',
-                    lastName: profile.lastName || '',
-                    email: profile.email || '',
-                    phone: profile.phone || '',
-                    dateOfBirth: profile.dateOfBirth || '',
-                    height: profile.height?.toString() || '',
-                    weight: profile.weight?.toString() || '',
-                    maritalStatus: profile.maritalStatus || '',
-                    education: profile.education || '',
-                    occupation: profile.occupation || '',
-                    income: profile.income || '',
-                    city: profile.city || '',
-                    state: profile.state || '',
-                    diet: profile.diet || '',
-                    religion: profile.religion || '',
-                    motherTongue: profile.motherTongue || '',
-                    aboutMe: profile.aboutMe || '',
-                });
-                setProfilePhoto(profile.profilePhoto || profile.photos?.[0]?.url);
-            }
-        } catch (error: any) {
-            goBack();
-            showToast(error?.message || 'Failed to fetch profile', { type: 'error' });
-            console.log('Error fetching profile');
-        } finally {
-            setLoading(false);
+    const updateField = (field: string, value: string) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: '' }));
         }
     };
 
-    const handleSaveProfile = async () => {
-        try {
-            setSaving(true);
-            const profileData: any = {
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                height: formData.height ? parseInt(formData.height) : undefined,
-                weight: formData.weight ? parseInt(formData.weight) : undefined,
-                education: formData.education,
-                occupation: formData.occupation,
-                aboutMe: formData.aboutMe,
-                maritalStatus: formData.maritalStatus,
-                diet: formData.diet,
-                religion: formData.religion,
-                motherTongue: formData.motherTongue,
-            };
+    useEffect(() => {
+        if (isFocused) { fetchProfile() }
+    }, [isFocused]);
 
-            const response = await createOrUpdateProfile(profileData);
-            if (response.success) {
-                showToast('Profile updated successfully!', { type: 'success' });
-                onBack();
-            } else {
-                showToast(response.message || 'Failed to update profile', { type: 'error' });
-            }
-        } catch (error: any) {
-            showToast(error?.message || 'Failed to update profile', { type: 'error' });
-        } finally {
-            setSaving(false);
+    const fetchProfile = async () => {
+        setLoading(true);
+        dispatch(
+            getMyProfile((response: any) => {
+                setLoading(false);
+                if (response?.success && response?.data) {
+                    const profile = response.data?.profile;
+                    setFormData({
+                        email: response?.data?.email || '',
+                        phone: response?.data?.phone?.replace('+91', '') || '',
+                        fullName: profile?.fullName || '',
+                        dateOfBirth: moment(profile?.dateOfBirth).format('YYYY-MM-DD') || '',
+                        height: profile?.height?.toString() || '',
+                        weight: profile?.weight?.toString() || '',
+                        maritalStatus: profile?.maritalStatus || '',
+                        education: profile?.education || '',
+                        occupation: profile?.occupation || '',
+                        city: profile?.currentCity || '',
+                        state: profile?.currentState || '',
+                        religion: profile.religion || '',
+                        motherTongue: profile.motherTongue || '',
+                        aboutMe: profile.aboutMe || '',
+                        gender: profile.gender || '',
+                        age: profile.age || '',
+                    });
+                    var profilePhoto = response?.data?.photos?.find((photo: any) => photo.isProfilePhoto);
+                    setProfilePhoto(profilePhoto?.url || response?.data?.photos?.[0]?.url);
+                }
+            })
+        );
+    };
+
+    const validateForm = (): boolean => {
+        const newErrors: Record<string, string> = {};
+
+        if (!formData.fullName.trim()) {
+            newErrors.fullName = 'Full name is required';
+        } else if (formData.fullName.trim().length < 2) {
+            newErrors.fullName = 'Full name must be at least 2 characters';
         }
+
+        if (!formData.email.trim()) {
+            newErrors.email = 'Email is required';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            newErrors.email = 'Please enter a valid email';
+        }
+
+        if (!formData.phone.trim()) {
+            newErrors.phone = 'Phone number is required';
+        } else if (!/^\d{10}$/.test(formData.phone.replace(/\D/g, ''))) {
+            newErrors.phone = 'Please enter a valid 10-digit phone number';
+        }
+
+        if (!formData.height) {
+            newErrors.height = 'Height is required';
+        }
+
+        if (formData.height && (parseInt(formData.height) < 100 || parseInt(formData.height) > 250)) {
+            newErrors.height = 'Please enter a valid height (100-250 cm)';
+        }
+
+        if (!formData.weight) {
+            newErrors.weight = 'Weight is required';
+        }
+
+        if (formData.weight && (parseInt(formData.weight) < 30 || parseInt(formData.weight) > 200)) {
+            newErrors.weight = 'Please enter a valid weight (30-200 kg)';
+        }
+
+        if (!formData.occupation.trim()) {
+            newErrors.occupation = 'Occupation is required';
+        }
+
+        if (!formData.city.trim()) {
+            newErrors.city = 'City is required';
+        }
+
+        if (!formData.state.trim()) {
+            newErrors.state = 'State is required';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSaveProfile = async () => {
+        if (!validateForm()) {
+            showToast('Please fix the errors before saving', { type: 'error' });
+            return;
+        }
+        setSaving(true);
+        const profileData: any = {
+            fullName: formData?.fullName?.trim(),
+            email: formData?.email?.trim(),
+            phone: `+91${formData?.phone?.trim()}`,
+            dateOfBirth: formData?.dateOfBirth?.trim(),
+            height: formData?.height?.trim(),
+            weight: formData?.weight?.trim(),
+            maritalStatus: formData?.maritalStatus?.trim(),
+            education: formData?.education?.trim(),
+            occupation: formData?.occupation?.trim(),
+            currentCity: formData?.city?.trim(),
+            currentState: formData?.state?.trim(),
+            religion: formData?.religion?.trim(),
+            motherTongue: formData?.motherTongue?.trim(),
+            aboutMe: formData?.aboutMe?.trim(),
+            gender: formData?.gender?.trim(),
+            age: formData?.age,
+        };
+        dispatch(createOrUpdateProfile(profileData, (response: any) => {
+            setSaving(false);
+        }));
     };
 
     const handleUploadPhoto = async () => {
@@ -121,10 +185,7 @@ export function EditProfileScreen({ onBack, currentUser }: EditProfileScreenProp
             const photo = await pickSinglePhoto({ source: 'gallery', cropping: true, cropperCircleOverlay: true });
             if (photo) {
                 const response = await uploadPhoto(photo, true);
-                if (response.success && response.data) {
-                    setProfilePhoto(response.data.url);
-                    showToast('Photo uploaded successfully!', { type: 'success' });
-                }
+                if (response?.success) { fetchProfile() }
             }
         } catch (error: any) {
             showToast(error?.message || 'Failed to upload photo', { type: 'error' });
@@ -162,10 +223,7 @@ export function EditProfileScreen({ onBack, currentUser }: EditProfileScreenProp
         >
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {loading ? (
-                    <View style={{ padding: 40, alignItems: 'center' }}>
-                        <ActivityIndicator size="large" color="#f97316" />
-                        <Text style={{ marginTop: 16, color: '#6b7280' }}>Loading profile...</Text>
-                    </View>
+                    <FormSkeleton sections={4} fieldsPerSection={4} />
                 ) : (
                     <>
                         {/* Profile Photo */}
@@ -196,111 +254,97 @@ export function EditProfileScreen({ onBack, currentUser }: EditProfileScreenProp
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>{t('editProfile.personalInformation')}</Text>
 
-                            <Text style={styles.label}>First Name</Text>
-                            <TextInput
-                                style={styles.input}
-                                value={formData.firstName}
-                                onChangeText={(text) => setFormData({ ...formData, firstName: text })}
-                                placeholder="Enter your first name"
-                                placeholderTextColor="#9ca3af"
+                            <FormInput
+                                label="Full Name"
+                                value={formData.fullName}
+                                onChangeText={(text) => updateField('fullName', text)}
+                                placeholder="Enter your full name"
+                                error={errors.fullName}
                             />
 
-                            <Text style={styles.label}>Last Name</Text>
-                            <TextInput
-                                style={styles.input}
-                                value={formData.lastName}
-                                onChangeText={(text) => setFormData({ ...formData, lastName: text })}
-                                placeholder="Enter your last name"
-                                placeholderTextColor="#9ca3af"
-                            />
-
-                            <Text style={styles.label}>{t('editProfile.emailAddress')}</Text>
-                            <TextInput
-                                style={styles.input}
+                            <FormInput
+                                label={t('editProfile.emailAddress')}
                                 value={formData.email}
-                                onChangeText={(text) => setFormData({ ...formData, email: text })}
+                                onChangeText={(text) => updateField('email', text)}
                                 placeholder="Enter your email"
-                                placeholderTextColor="#9ca3af"
                                 keyboardType="email-address"
+                                error={errors.email}
+                                editable={false}
                             />
 
-                            <Text style={styles.label}>{t('editProfile.phoneNumber')}</Text>
-                            <TextInput
-                                style={styles.input}
+                            <FormInput
+                                type="phone"
+                                label={t('editProfile.phoneNumber')}
                                 value={formData.phone}
-                                onChangeText={(text) => setFormData({ ...formData, phone: text })}
+                                onChangeText={(text) => updateField('phone', text)}
                                 placeholder="Enter your phone number"
-                                placeholderTextColor="#9ca3af"
                                 keyboardType="phone-pad"
+                                error={errors.phone}
+                                editable={false}
                             />
 
-                            <Text style={styles.label}>{t('editProfile.dateOfBirth')}</Text>
-                            <TextInput
-                                style={styles.input}
+                            <DatePickerInput
+                                label={t('editProfile.dateOfBirth')}
                                 value={formData.dateOfBirth}
-                                onChangeText={(text) => setFormData({ ...formData, dateOfBirth: text })}
+                                onChange={(text, age) => {
+                                    updateField('dateOfBirth', text)
+                                    updateField('age', age.toString())
+                                }}
                                 placeholder="YYYY-MM-DD"
-                                placeholderTextColor="#9ca3af"
+                                error={errors.dateOfBirth}
                             />
 
                             <View style={styles.row}>
                                 <View style={styles.halfWidth}>
-                                    <Text style={styles.label}>{t('profile.height')}</Text>
-                                    <TextInput
-                                        style={styles.input}
+                                    <FormInput
+                                        label={t('profile.height')}
                                         value={formData.height}
-                                        onChangeText={(text) => setFormData({ ...formData, height: text })}
-                                        placeholder="5'8&quot;"
-                                        placeholderTextColor="#9ca3af"
+                                        onChangeText={(text) => updateField('height', text.replace(/\D/g, ''))}
+                                        placeholder="170 cm"
+                                        keyboardType="number-pad"
+                                        error={errors.height}
                                     />
                                 </View>
                                 <View style={styles.halfWidth}>
-                                    <Text style={styles.label}>{t('profile.weight')}</Text>
-                                    <TextInput
-                                        style={styles.input}
+                                    <FormInput
+                                        label={t('profile.weight')}
                                         value={formData.weight}
-                                        onChangeText={(text) => setFormData({ ...formData, weight: text })}
+                                        onChangeText={(text) => updateField('weight', text.replace(/\D/g, ''))}
                                         placeholder="65 kg"
-                                        placeholderTextColor="#9ca3af"
+                                        keyboardType="number-pad"
+                                        error={errors.weight}
                                     />
                                 </View>
                             </View>
 
-                            <Text style={styles.label}>{t('profile.maritalStatus')}</Text>
-                            <View style={styles.selectContainer}>
-                                <Text style={styles.selectText}>{t('editProfile.selectMaritalStatus')}</Text>
-                            </View>
+                            <DropdownPickerInput
+                                label={t('profile.maritalStatus')}
+                                value={formData.maritalStatus}
+                                onChange={(value) => updateField('maritalStatus', value)}
+                                placeholder="Select marital status"
+                                options={MARITAL_STATUS_OPTIONS}
+                                error={errors.maritalStatus}
+                            />
                         </View>
 
                         {/* Education & Career */}
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>{t('editProfile.educationCareer')}</Text>
 
-                            <Text style={styles.label}>{t('profile.education')}</Text>
-                            <TextInput
-                                style={styles.input}
+                            <FormInput
+                                label={t('profile.education')}
                                 value={formData.education}
-                                onChangeText={(text) => setFormData({ ...formData, education: text })}
+                                onChangeText={(text) => updateField('education', text)}
                                 placeholder="e.g., B.Tech in Computer Science"
-                                placeholderTextColor="#9ca3af"
+                                error={errors.education}
                             />
 
-                            <Text style={styles.label}>{t('profile.occupation')}</Text>
-                            <TextInput
-                                style={styles.input}
+                            <FormInput
+                                label={t('profile.occupation')}
                                 value={formData.occupation}
-                                onChangeText={(text) => setFormData({ ...formData, occupation: text })}
+                                onChangeText={(text) => updateField('occupation', text)}
                                 placeholder="e.g., Software Engineer"
-                                placeholderTextColor="#9ca3af"
-                            />
-
-                            <Text style={styles.label}>{t('editProfile.annualIncome')}</Text>
-                            <TextInput
-                                style={styles.input}
-                                value={formData.income}
-                                onChangeText={(text) => setFormData({ ...formData, income: text })}
-                                placeholder="e.g., ₹8-10 Lakhs"
-                                placeholderTextColor="#9ca3af"
+                                error={errors.occupation}
                             />
                         </View>
 
@@ -308,22 +352,20 @@ export function EditProfileScreen({ onBack, currentUser }: EditProfileScreenProp
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>{t('editProfile.location')}</Text>
 
-                            <Text style={styles.label}>{t('profile.city')}</Text>
-                            <TextInput
-                                style={styles.input}
+                            <FormInput
+                                label={t('profile.city')}
                                 value={formData.city}
-                                onChangeText={(text) => setFormData({ ...formData, city: text })}
+                                onChangeText={(text) => updateField('city', text)}
                                 placeholder="Enter your city"
-                                placeholderTextColor="#9ca3af"
+                                error={errors.city}
                             />
 
-                            <Text style={styles.label}>{t('profile.state')}</Text>
-                            <TextInput
-                                style={styles.input}
+                            <FormInput
+                                label={t('profile.state')}
                                 value={formData.state}
-                                onChangeText={(text) => setFormData({ ...formData, state: text })}
+                                onChangeText={(text) => updateField('state', text)}
                                 placeholder="Enter your state"
-                                placeholderTextColor="#9ca3af"
+                                error={errors.state}
                             />
                         </View>
 
@@ -331,27 +373,20 @@ export function EditProfileScreen({ onBack, currentUser }: EditProfileScreenProp
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>{t('editProfile.lifestyleBackground')}</Text>
 
-                            <Text style={styles.label}>{t('profile.diet')}</Text>
-                            <View style={styles.selectContainer}>
-                                <Text style={styles.selectText}>{t('editProfile.selectDiet')}</Text>
-                            </View>
-
-                            <Text style={styles.label}>{t('profile.religion')}</Text>
-                            <TextInput
-                                style={styles.input}
+                            <FormInput
+                                label={t('profile.religion')}
                                 value={formData.religion}
-                                onChangeText={(text) => setFormData({ ...formData, religion: text })}
+                                onChangeText={(text) => updateField('religion', text)}
                                 placeholder="Enter your religion"
-                                placeholderTextColor="#9ca3af"
+                                error={errors.religion}
                             />
 
-                            <Text style={styles.label}>{t('profile.motherTongue')}</Text>
-                            <TextInput
-                                style={styles.input}
+                            <FormInput
+                                label={t('profile.motherTongue')}
                                 value={formData.motherTongue}
-                                onChangeText={(text) => setFormData({ ...formData, motherTongue: text })}
+                                onChangeText={(text) => updateField('motherTongue', text)}
                                 placeholder="Enter your mother tongue"
-                                placeholderTextColor="#9ca3af"
+                                error={errors.motherTongue}
                             />
                         </View>
 
@@ -359,16 +394,14 @@ export function EditProfileScreen({ onBack, currentUser }: EditProfileScreenProp
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>{t('editProfile.aboutMe')}</Text>
 
-                            <Text style={styles.label}>{t('profile.bio')}</Text>
-                            <TextInput
-                                style={[styles.input, styles.textArea]}
-                                value={formData.aboutMe}
-                                onChangeText={(text) => setFormData({ ...formData, aboutMe: text })}
-                                placeholder={t('editProfile.bioPlaceholder')}
-                                placeholderTextColor="#9ca3af"
+                            <FormInput
                                 multiline
+                                label={t('profile.bio')}
+                                value={formData.aboutMe}
+                                onChangeText={(text) => updateField('aboutMe', text)}
+                                placeholder={t('editProfile.bioPlaceholder')}
                                 numberOfLines={4}
-                                textAlignVertical="top"
+                                error={errors.aboutMe}
                             />
                         </View>
 
@@ -376,7 +409,7 @@ export function EditProfileScreen({ onBack, currentUser }: EditProfileScreenProp
                     </>
                 )}
             </ScrollView>
-        </CustomSafeAreaView>
+        </CustomSafeAreaView >
     );
 }
 

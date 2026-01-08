@@ -49,7 +49,7 @@ export function SearchScreen({ onViewProfile }: SearchScreenProps) {
     const handleQuickSearch = async () => {
         try {
             setSearching(true);
-            const response = await quickSearch(searchQuery);
+            const response = await quickSearch(searchQuery.trim());
             if (response.success && response.data?.profiles) {
                 setSearchResults(response.data.profiles);
             } else {
@@ -67,13 +67,13 @@ export function SearchScreen({ onViewProfile }: SearchScreenProps) {
             setLoading(true);
             const searchFilters: any = {};
 
-            if (filters.ageMin) searchFilters.ageMin = parseInt(filters.ageMin);
-            if (filters.ageMax) searchFilters.ageMax = parseInt(filters.ageMax);
-            if (filters.city) searchFilters.location = [filters.city];
-            if (filters.education) searchFilters.education = [filters.education];
-            if (filters.occupation) searchFilters.occupation = filters.occupation;
-            if (filters.maritalStatus) searchFilters.maritalStatus = [filters.maritalStatus];
-            if (filters.diet) searchFilters.diet = filters.diet;
+            if (filters.ageMin) searchFilters.ageMin = parseInt(filters.ageMin.trim());
+            if (filters.ageMax) searchFilters.ageMax = parseInt(filters.ageMax.trim());
+            if (filters.city) searchFilters.location = [filters.city.trim()];
+            if (filters.education) searchFilters.education = [filters.education.trim()];
+            if (filters.occupation) searchFilters.occupation = filters.occupation.trim();
+            if (filters.maritalStatus) searchFilters.maritalStatus = [filters.maritalStatus.trim()];
+            if (filters.diet) searchFilters.diet = filters.diet.trim();
 
             const response = await advancedSearch(searchFilters);
             if (response.success && response.data?.profiles) {

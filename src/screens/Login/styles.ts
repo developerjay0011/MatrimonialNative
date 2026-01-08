@@ -49,12 +49,12 @@ export const styles = StyleSheet.create({
     },
 
     card: {
-        marginHorizontal: 16,
+        marginHorizontal: 15,
         backgroundColor: '#ffffff',
-        borderRadius: 24,
+        borderRadius: 30,
         padding: 24,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.1,
         shadowRadius: 12,
         elevation: 5,
@@ -150,7 +150,21 @@ export const styles = StyleSheet.create({
     otpHint: {
         fontSize: 13,
         color: '#6b7280',
-        textAlign: 'center',
+    },
+    otpFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    resendText: {
+        fontSize: 13,
+        color: '#f97316',
+        fontWeight: '600',
+    },
+    timerText: {
+        fontSize: 13,
+        color: '#9ca3af',
+        fontWeight: '500',
     },
 
     primaryButton: {
@@ -174,12 +188,13 @@ export const styles = StyleSheet.create({
     },
     centerAlign: {
         alignItems: 'center',
-        marginTop: 15
+        marginTop: 10
     },
     linkText: {
         color: '#f97316',
         fontSize: 14,
         fontWeight: '500',
+        textDecorationLine: "underline"
     },
 
     sectionSpacing: {

@@ -1,4 +1,8 @@
-import React, { useState } from "react";
+import { styles } from "./styles";
+
+import { useTranslation } from "react-i18next";
+import { useAppDispatch } from "../../redux/hooks";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,12 +17,8 @@ import Animated, {
   FadeInRight
 } from "react-native-reanimated";
 import LinearGradient from "react-native-linear-gradient";
-import { useTranslation } from "react-i18next";
 import { CustomSafeAreaView } from "../../components/CustomSafeAreaView";
-import { styles } from "./styles";
 import { sendOTP, verifyOTP, loginUser } from "../../redux/actions/auth";
-import { showToast } from "../../utils/toast";
-import { navigate } from "../../navigation/RootNavigation";
 
 interface LoginScreenProps {
   onRegister: () => void;
@@ -26,6 +26,7 @@ interface LoginScreenProps {
 
 export function LoginScreen({ onRegister }: LoginScreenProps) {
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
   const [loginMethod, setLoginMethod] = useState<"phone" | "email">("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
@@ -33,61 +34,63 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+  const [canResend, setCanResend] = useState(false);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | undefined;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => {
+          if (prev <= 1) {
+            setCanResend(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [resendTimer]);
 
   const handleSendOTP = async () => {
     if (phoneNumber.length === 10) {
-      try {
-        setLoading(true);
-        const response = await sendOTP(`+91${phoneNumber}`);
-        if (response.success) {
-          setOtpSent(true);
-          showToast(response.message || 'OTP sent successfully', { type: 'success' });
-        } else {
-          showToast(response.message || 'Failed to send OTP', { type: 'error' });
-        }
-      } catch (error: any) {
-        showToast(error?.message || 'Failed to send OTP', { type: 'error' });
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      setOtpSent(false);
+      dispatch(
+        sendOTP(`+91${phoneNumber.trim()}`,
+          (response: any) => {
+            setLoading(false);
+            if (response.success) {
+              setOtp('');
+              setResendTimer(60);
+              setCanResend(false)
+              setOtpSent(true);
+            }
+          })
+      );
     }
   };
 
   const handleVerifyOTP = async () => {
     if (otp.length === 6) {
-      try {
-        setLoading(true);
-        const response = await verifyOTP(`+91${phoneNumber}`, otp);
-        if (response.success) {
-          showToast(response.message || 'Login successful', { type: 'success' });
-          navigate('Home');
-        } else {
-          showToast(response.message || 'Invalid OTP', { type: 'error' });
-        }
-      } catch (error: any) {
-        showToast(error?.message || 'OTP verification failed', { type: 'error' });
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      dispatch(
+        verifyOTP(`+91${phoneNumber.trim()}`, otp.trim(),
+          (response: any) => {
+            setLoading(false);
+            setOtp('');
+          })
+      );
     }
   };
 
   const handleEmailLogin = async () => {
     if (email && password) {
-      try {
-        setLoading(true);
-        const response = await loginUser({ email, password });
-        if (response.success) {
-          showToast(response.message || 'Login successful', { type: 'success' });
-          navigate('Home');
-        } else {
-          showToast(response.message || 'Invalid credentials', { type: 'error' });
-        }
-      } catch (error: any) {
-        showToast(error?.message || 'Login failed', { type: 'error' });
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      dispatch(loginUser({ email: email.trim(), password: password.trim() }, setLoading));
     }
   };
 
@@ -119,9 +122,9 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
       )}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
         bounces={false}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
       >
         {/* White Card Container */}
         <View style={styles.card}>
@@ -184,9 +187,20 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
                     style={styles.otpInput}
                     placeholderTextColor="#9ca3af"
                   />
-                  <Text style={styles.otpHint}>
-                    OTP sent to +91 {phoneNumber}
-                  </Text>
+                  <View style={styles.otpFooter}>
+                    <Text style={styles.otpHint}>
+                      OTP sent to +91 {phoneNumber}
+                    </Text>
+                    {canResend ? (
+                      <TouchableOpacity onPress={handleSendOTP} disabled={loading}>
+                        <Text style={styles.resendText}>Resend OTP</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <Text style={styles.timerText}>
+                        Resend in {resendTimer}s
+                      </Text>
+                    )}
+                  </View>
                 </Animated.View>
               )}
 
@@ -216,7 +230,11 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={() => setOtpSent(false)}
+                    onPress={() => {
+                      setOtpSent(false);
+                      setResendTimer(0);
+                      setCanResend(false);
+                    }}
                     style={styles.centerAlign}
                   >
                     <Text style={styles.linkText}>Change Number</Text>

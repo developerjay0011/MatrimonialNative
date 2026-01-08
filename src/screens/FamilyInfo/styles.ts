@@ -23,7 +23,6 @@ export const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#ffffff',
         flex: 1,
-        textAlign: 'center',
         marginRight: 40,
     },
     saveButton: {

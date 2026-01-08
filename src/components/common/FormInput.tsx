@@ -10,9 +10,10 @@ interface FormInputProps extends TextInputProps {
     onRightIconPress?: () => void;
     onPress?: () => void;
     type?: 'text' | 'phone' | 'email';
+    multiline?: boolean;
 }
 
-export function FormInput({ label, onPress, required, error, rightIcon, onRightIconPress, type, ...props }: FormInputProps) {
+export function FormInput({ label, onPress, required, error, rightIcon, onRightIconPress, type, multiline, ...props }: FormInputProps) {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const isPasswordField = props.secureTextEntry;
 
@@ -34,13 +35,15 @@ export function FormInput({ label, onPress, required, error, rightIcon, onRightI
                     )
                 }
                 <TextInput
+                    {...props}
                     style={[
                         styles.input,
                         error && styles.inputError,
+                        multiline && styles.inputMultiline,
                         (rightIcon || isPasswordField) ? styles.inputWithIcon : undefined
                     ]}
+                    multiline={multiline}
                     placeholderTextColor="#9ca3af"
-                    {...props}
                     secureTextEntry={isPasswordField && !isPasswordVisible}
                 />
                 {isPasswordField && (
@@ -93,6 +96,11 @@ const styles = StyleSheet.create({
     },
     container: {
         marginBottom: 18,
+    },
+    inputMultiline: {
+        height: null,
+        minHeight: 120,
+        textAlignVertical: 'top',
     },
     label: {
         fontSize: 13,

@@ -18,6 +18,8 @@ import {
     Images
 } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { DeactivateDialog, LogoutDialog } from '../../components/ConfirmationDialogs';
+import { deactivateUser, logoutUser } from '../../redux/actions';
 
 interface SettingsScreenProps {
     onBack: () => void;
@@ -28,8 +30,6 @@ interface SettingsScreenProps {
     onLanguage: () => void;
     onHelpSupport: () => void;
     onSafetyTips: () => void;
-    onDeactivate: () => void;
-    onLogout: () => void;
     onFamilyInfo: () => void;
     onManageGallery: () => void;
 }
@@ -42,12 +42,13 @@ export function SettingsScreen({
     onLanguage,
     onHelpSupport,
     onSafetyTips,
-    onDeactivate,
-    onLogout,
     onFamilyInfo,
     onManageGallery,
 }: SettingsScreenProps) {
     const { t } = useTranslation();
+    const [logoutDialogVisible, setLogoutDialogVisible] = React.useState(false);
+    const [deactivateDialogVisible, setDeactivateDialogVisible] = React.useState(false);
+
     const MenuItem = ({
         icon: Icon,
         title,
@@ -164,14 +165,14 @@ export function SettingsScreen({
                     <View style={styles.sectionContent}>
                         <MenuItem
                             icon={Trash2}
-                            title={t('settings.deactivateAccount')}
-                            onPress={onDeactivate}
                             color="#ef4444"
+                            title={t('settings.deactivateAccount')}
+                            onPress={() => setDeactivateDialogVisible(true)}
                         />
                         <MenuItem
                             icon={LogOut}
                             title={t('settings.logout')}
-                            onPress={onLogout}
+                            onPress={() => setLogoutDialogVisible(true)}
                         />
                     </View>
                 </View>
@@ -181,6 +182,17 @@ export function SettingsScreen({
                     <Text style={styles.appInfoText}>Dhimmar Samaj Matrimony</Text>
                     <Text style={styles.appVersion}>Version 1.0.0</Text>
                 </View>
+
+                <LogoutDialog
+                    isOpen={logoutDialogVisible}
+                    onConfirm={() => { logoutUser() }}
+                    onClose={() => setLogoutDialogVisible(false)}
+                />
+                <DeactivateDialog
+                    isOpen={deactivateDialogVisible}
+                    onConfirm={() => { deactivateUser() }}
+                    onClose={() => setDeactivateDialogVisible(false)}
+                />
             </ScrollView>
         </CustomSafeAreaView>
     );

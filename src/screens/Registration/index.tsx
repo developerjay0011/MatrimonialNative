@@ -32,16 +32,16 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: "test10@gmail.com",
-    phone: "1234567888",
-    password: "Yash@123",
-    fullName: "Yash",
-    gender: "male",
-    dateOfBirth: "2000-01-01",
-    city: "Mumbai",
-    currentState: "Maharashtra",
-    occupation: "Student",
-    age: "22",
+    email: "",
+    phone: "",
+    password: "",
+    fullName: "",
+    gender: "",
+    dateOfBirth: "",
+    city: "",
+    currentState: "",
+    occupation: "",
+    age: "",
     photos: [] as UploadedPhoto[],
   });
 
@@ -125,7 +125,21 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
         setErrors({});
       } else {
         setLoading(true);
-        dispatch(registerUser({ ...formData, setLoading }));
+        const trimmedData = {
+          ...formData,
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          password: formData.password.trim(),
+          fullName: formData.fullName.trim(),
+          gender: formData.gender.trim(),
+          dateOfBirth: formData.dateOfBirth.trim(),
+          city: formData.city.trim(),
+          currentState: formData.currentState.trim(),
+          occupation: formData.occupation.trim(),
+          age: formData.age,
+          setLoading,
+        };
+        dispatch(registerUser(trimmedData));
       }
     }
   };

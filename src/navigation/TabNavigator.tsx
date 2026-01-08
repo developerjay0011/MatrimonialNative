@@ -24,8 +24,6 @@ interface TabNavigatorProps {
     onLanguage: () => void;
     onHelpSupport: () => void;
     onSafetyTips: () => void;
-    onDeactivate: () => void;
-    onLogout: () => void;
 }
 
 export function TabNavigator({
@@ -41,8 +39,6 @@ export function TabNavigator({
     onLanguage,
     onHelpSupport,
     onSafetyTips,
-    onDeactivate,
-    onLogout,
 }: TabNavigatorProps) {
     const insets = useSafeAreaInsets();
     return (
@@ -161,8 +157,6 @@ export function TabNavigator({
                         onLanguage={onLanguage}
                         onHelpSupport={onHelpSupport}
                         onSafetyTips={onSafetyTips}
-                        onDeactivate={onDeactivate}
-                        onLogout={onLogout}
                     />
                 )}
             </Tab.Screen>

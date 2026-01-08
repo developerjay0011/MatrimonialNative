@@ -13,9 +13,6 @@ export const getData = async (url, params = {}) => {
     headers.api_call_time = new Date()
     var requestParams = params?.params || {};
     var endPoint = url?.replace(BaseUrl, "");
-    if (params?.showConsole) {
-        console.warn("getData", endPoint)
-    }
     return apiClient.get(endPoint, { ...headers, params: requestParams });
 }
 
@@ -25,7 +22,7 @@ export const postData = async (url, params = {}) => {
     headers.api_call_time = new Date()
     var endPoint = url?.replace(BaseUrl, "");
     if (params?.showConsole) {
-        console.warn("postData", endPoint, data)
+        console.log("postData", endPoint, data)
     }
     return apiClient.post(endPoint, data, headers);
 }
@@ -48,19 +45,15 @@ export const putData = async (url, params = {}) => {
     headers.api_call_time = new Date()
     var endPoint = url?.replace(BaseUrl, "");
     if (params?.showConsole) {
-        console.warn("putData", endPoint, data)
+        console.log("putData", endPoint, data)
     }
     return apiClient.put(endPoint, data, headers);
 }
 
 export const deleteData = async (url, params = {}) => {
-    try {
-        var headers = getHeaders(params);
-        headers.api_call_time = new Date()
-        var requestParams = params?.params || {};
-        var endPoint = url?.replace(BaseUrl, "");
-        return apiClient.delete(endPoint, { ...headers, params: requestParams });
-    } catch (error) {
-        console.error("deleteData", error)
-    }
+    var headers = getHeaders(params);
+    headers.api_call_time = new Date()
+    var requestParams = params?.params || {};
+    var endPoint = url?.replace(BaseUrl, "");
+    return apiClient.delete(endPoint, { ...headers, params: requestParams });
 }

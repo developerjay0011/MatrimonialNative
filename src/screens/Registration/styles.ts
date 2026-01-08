@@ -80,7 +80,7 @@ export const styles = StyleSheet.create({
   },
   photoPickerIcon: {
     fontSize: 28,
-    marginBottom: 10,
+    marginBottom: 5,
   },
   photoPickerTitle: {
     fontSize: 15,

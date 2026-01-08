@@ -22,23 +22,10 @@ export const uploadPhoto = async (photo: any, isProfilePhoto: boolean = false) =
             data: formData,
             showConsole: true,
         });
-
-        if (response?.data?.success) {
-            showToast(response.data.message || 'Photo uploaded successfully', { type: 'success' });
-        }
-
+        showToast(response?.data?.message, { type: response?.data?.success ? 'success' : 'error' });
         return response.data;
     } catch (error: any) {
         showToast(error?.message || 'Failed to upload photo', { type: 'error' });
-        throw error;
-    }
-};
-
-export const getMyPhotos = async () => {
-    try {
-        const response = await getData(PHOTO_ENDPOINTS.GET_MY_PHOTOS, { showConsole: true });
-        return response.data;
-    } catch (error) {
         throw error;
     }
 };
@@ -55,12 +42,11 @@ export const getUserPhotos = async (userId: string) => {
 export const deletePhoto = async (photoId: string) => {
     try {
         const response = await deleteData(`${PHOTO_ENDPOINTS.DELETE_PHOTO}${photoId}`, { showConsole: true });
-
-        if (response?.data?.success) {
-            showToast(response.data.message || 'Photo deleted successfully', { type: 'success' });
+        if (response?.data) {
+            showToast(response.data.message, { type: response.data.success ? 'success' : 'error' });
+            return response.data;
         }
-
-        return response.data;
+        return { success: false, message: 'No response from server' };
     } catch (error: any) {
         showToast(error?.message || 'Failed to delete photo', { type: 'error' });
         throw error;

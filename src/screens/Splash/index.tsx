@@ -1,5 +1,6 @@
+import { styles } from './styles';
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -10,14 +11,16 @@ import Animated, {
   withRepeat,
   FadeIn
 } from 'react-native-reanimated';
-import LinearGradient from 'react-native-linear-gradient';
-import { CustomSafeAreaView } from '../../components/CustomSafeAreaView';
-import { styles } from './styles';
+import { getMyProfile } from '../../redux/actions';
+import { useAppDispatch } from '../../redux/hooks';
 import { StorageService } from '../../utils/storage';
 import { replace } from '../../navigation/RootNavigation';
+import LinearGradient from 'react-native-linear-gradient';
+import { CustomSafeAreaView } from '../../components/CustomSafeAreaView';
 
 export function SplashScreen() {
   // Animation values
+  const dispatch = useAppDispatch();
   const containerOpacity = useSharedValue(0);
   const containerScale = useSharedValue(0.5);
 
@@ -50,6 +53,8 @@ export function SplashScreen() {
 
     (async () => {
       const token = await StorageService.getAccessToken()
+      dispatch(getMyProfile());
+      console.log("token", token)
       setTimeout(() => {
         if (token) {
           replace('Home')
