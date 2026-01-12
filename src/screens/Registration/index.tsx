@@ -20,12 +20,14 @@ import { DatePickerInput } from '../../components/common/DatePickerInput';
 import Animated, { FadeInRight, FadeOutLeft } from 'react-native-reanimated';
 import { pickMultiplePhotos, pickSinglePhoto, UploadedPhoto } from '../../utils/photoUpload';
 import { PermissionRequestModal, PermissionRequestModalRef } from '../../components/common/PermissionRequestModal';
+import { useTranslation } from 'react-i18next';
 
 interface RegistrationFlowProps {
   onBack: () => void;
 }
 
 export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
+  const { t } = useTranslation();
   const maxPhotos = 6;
   const totalSteps = 3;
   const dispatch = useAppDispatch();
@@ -56,61 +58,61 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
 
     if (currentStep === 1) {
       if (!formData.email.trim()) {
-        newErrors.email = 'Email is required';
+        newErrors.email = t('registration.errors.emailRequired');
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        newErrors.email = 'Please enter a valid email';
+        newErrors.email = t('registration.errors.emailInvalid');
       }
 
       if (!formData.phone.trim()) {
-        newErrors.phone = 'Phone number is required';
+        newErrors.phone = t('registration.errors.phoneRequired');
       } else if (!/^\d{10}$/.test(formData.phone.replace(/\D/g, ''))) {
-        newErrors.phone = 'Please enter a valid 10-digit phone number';
+        newErrors.phone = t('registration.errors.phoneInvalid');
       }
 
       if (!formData.password.trim()) {
-        newErrors.password = 'Password is required';
+        newErrors.password = t('registration.errors.passwordRequired');
       } else if (formData.password.length < 8) {
-        newErrors.password = 'Password must be at least 8 characters';
+        newErrors.password = t('registration.errors.passwordMinLength');
       } else if (!/[A-Z]/.test(formData.password)) {
-        newErrors.password = 'Password must contain at least 1 uppercase letter';
+        newErrors.password = t('registration.errors.passwordUppercase');
       } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
-        newErrors.password = 'Password must contain at least 1 special character';
+        newErrors.password = t('registration.errors.passwordSpecial');
       }
 
       if (!formData.fullName.trim()) {
-        newErrors.fullName = 'Full name is required';
+        newErrors.fullName = t('registration.errors.fullNameRequired');
       }
 
       if (!formData.gender) {
-        newErrors.gender = 'Please select your gender';
+        newErrors.gender = t('registration.errors.genderRequired');
       }
 
       if (!formData.dateOfBirth) {
-        newErrors.dateOfBirth = 'Date of birth is required';
+        newErrors.dateOfBirth = t('registration.errors.dobRequired');
       } else if (Number(formData.age) < 18) {
-        newErrors.dateOfBirth = 'You must be at least 18 years old';
+        newErrors.dateOfBirth = t('registration.errors.dobMinAge');
       } else if (Number(formData.age) > 100) {
-        newErrors.dateOfBirth = 'Please enter a valid date of birth';
+        newErrors.dateOfBirth = t('registration.errors.dobInvalid');
       }
 
       if (!formData.city.trim()) {
-        newErrors.city = 'City is required';
+        newErrors.city = t('registration.errors.cityRequired');
       }
 
       if (!formData.currentState.trim()) {
-        newErrors.currentState = 'State is required';
+        newErrors.currentState = t('registration.errors.stateRequired');
       }
     }
 
     if (currentStep === 2) {
       if (!formData.occupation.trim()) {
-        newErrors.occupation = 'Occupation is required';
+        newErrors.occupation = t('registration.errors.occupationRequired');
       }
     }
 
     if (currentStep === 3) {
       if (formData.photos.length === 0) {
-        newErrors.photos = 'Please add at least one photo';
+        newErrors.photos = t('registration.errors.photosRequired');
       }
     }
 
@@ -190,8 +192,8 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
     if (Platform.OS === 'android') {
       const ok = await permissionModalRef.current?.ensureAndroidPermissions({
         permissions: ["android.permission.CAMERA"],
-        title: 'Allow access',
-        description: `We need access to your ${source === 'camera' ? 'camera' : 'photos'} to add profile pictures.`,
+        title: t('permissions.allowAccessTitle'),
+        description: t(source === 'camera' ? 'permissions.cameraDescription' : 'permissions.photosDescription'),
         explainerKey: `registration_${source}`,
       });
 
@@ -230,23 +232,23 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
         >
           {step === 1 && (
             <View>
-              <Text style={styles.title}>Basic Details</Text>
-              <Text style={styles.subtitle}>Let's start with your basic information</Text>
+              <Text style={styles.title}>{t('registration.basicDetailsTitle')}</Text>
+              <Text style={styles.subtitle}>{t('registration.basicDetailsSubtitle')}</Text>
 
               <FormInput
-                label="Full Name"
+                label={t('registration.fullName')}
                 required
                 value={formData.fullName}
                 onChangeText={(value) => {
                   updateField("fullName", value);
                   setErrors(prev => ({ ...prev, fullName: '' }));
                 }}
-                placeholder="Enter your full name"
+                placeholder={t('registration.fullNamePlaceholder')}
                 error={errors.fullName}
               />
 
               <FormInput
-                label="Email"
+                label={t('registration.email')}
                 required
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -255,13 +257,13 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
                   updateField("email", value);
                   setErrors(prev => ({ ...prev, email: '' }));
                 }}
-                placeholder="Enter your email"
+                placeholder={t('registration.emailPlaceholder')}
                 error={errors.email}
               />
 
               <FormInput
                 type="phone"
-                label="Phone"
+                label={t('registration.phone')}
                 required
                 keyboardType="phone-pad"
                 value={formData.phone}
@@ -269,12 +271,12 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
                   updateField("phone", value);
                   setErrors(prev => ({ ...prev, phone: '' }));
                 }}
-                placeholder="Enter your phone number"
+                placeholder={t('registration.phonePlaceholder')}
                 error={errors.phone}
               />
 
               <FormInput
-                label="Password"
+                label={t('registration.password')}
                 required
                 secureTextEntry
                 value={formData.password}
@@ -282,13 +284,13 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
                   updateField("password", value);
                   setErrors(prev => ({ ...prev, password: '' }));
                 }}
-                placeholder="Create a password"
+                placeholder={t('registration.passwordPlaceholder')}
                 error={errors.password}
               />
 
 
               <GenderSelector
-                label="Gender"
+                label={t('registration.gender')}
                 required
                 value={formData.gender}
                 onChange={(value) => {
@@ -299,7 +301,7 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
               {errors.gender && <Text style={styles.errorText}>{errors.gender}</Text>}
 
               <DatePickerInput
-                label="Date of Birth"
+                label={t('registration.dateOfBirth')}
                 required
                 value={formData.dateOfBirth}
                 onChange={(date, age) => {
@@ -307,32 +309,32 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
                   updateField('age', age.toString());
                   setErrors(prev => ({ ...prev, dateOfBirth: '' }));
                 }}
-                placeholder="Select your date of birth"
+                placeholder={t('registration.dateOfBirthPlaceholder')}
                 error={errors.dateOfBirth}
                 minDate={new Date(1924, 0, 1)}
               />
 
               <FormInput
-                label="City"
+                label={t('registration.city')}
                 required
                 value={formData.city}
                 onChangeText={(value) => {
                   updateField("city", value);
                   setErrors(prev => ({ ...prev, city: '' }));
                 }}
-                placeholder="Enter your city"
+                placeholder={t('registration.cityPlaceholder')}
                 error={errors.city}
               />
 
               <FormInput
-                label="State"
+                label={t('registration.state')}
                 required
                 value={formData.currentState}
                 onChangeText={(value) => {
                   updateField("currentState", value);
                   setErrors(prev => ({ ...prev, currentState: '' }));
                 }}
-                placeholder="Enter your state"
+                placeholder={t('registration.statePlaceholder')}
                 error={errors.currentState}
               />
             </View>
@@ -340,18 +342,18 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
 
           {step === 2 && (
             <View>
-              <Text style={styles.title}>Professional Details</Text>
-              <Text style={styles.subtitle}>Tell us about your profession</Text>
+              <Text style={styles.title}>{t('registration.professionalDetailsTitle')}</Text>
+              <Text style={styles.subtitle}>{t('registration.professionalDetailsSubtitle')}</Text>
 
               <FormInput
-                label="Occupation"
+                label={t('registration.occupation')}
                 required
                 value={formData.occupation}
                 onChangeText={(value) => {
                   updateField("occupation", value);
                   setErrors(prev => ({ ...prev, occupation: '' }));
                 }}
-                placeholder="e.g., Software Engineer"
+                placeholder={t('registration.occupationPlaceholder')}
                 error={errors.occupation}
               />
             </View>
@@ -359,8 +361,8 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
 
           {step === 3 && (
             <View>
-              <Text style={styles.title}>Add Photos</Text>
-              <Text style={styles.subtitle}>Upload your profile photos</Text>
+              <Text style={styles.title}>{t('registration.addPhotosTitle')}</Text>
+              <Text style={styles.subtitle}>{t('registration.addPhotosSubtitle')}</Text>
 
               <View style={styles.photoPickerCardsRow}>
                 <TouchableOpacity
@@ -369,8 +371,8 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
                   onPress={() => handlePickPress('camera')}
                 >
                   <Text style={styles.photoPickerIcon}>📷</Text>
-                  <Text style={styles.photoPickerTitle}>Camera</Text>
-                  <Text style={styles.photoPickerSubtitle}>Take a new photo</Text>
+                  <Text style={styles.photoPickerTitle}>{t('registration.camera')}</Text>
+                  <Text style={styles.photoPickerSubtitle}>{t('registration.takeNewPhoto')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -379,12 +381,12 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
                   onPress={() => handlePickPress('gallery')}
                 >
                   <Text style={styles.photoPickerIcon}>🖼️</Text>
-                  <Text style={styles.photoPickerTitle}>Gallery</Text>
-                  <Text style={styles.photoPickerSubtitle}>Choose from photos</Text>
+                  <Text style={styles.photoPickerTitle}>{t('registration.gallery')}</Text>
+                  <Text style={styles.photoPickerSubtitle}>{t('registration.chooseFromPhotos')}</Text>
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.photoHint}>{formData.photos.length}/{maxPhotos} photos selected</Text>
+              <Text style={styles.photoHint}>{t('registration.photosSelected', { selected: formData.photos.length, max: maxPhotos })}</Text>
               {errors.photos && <Text style={styles.errorText}>{errors.photos}</Text>}
 
               <View style={styles.photoGrid}>
@@ -399,8 +401,8 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
 
                 {formData.photos.length === 0 && (
                   <View style={styles.photoEmpty}>
-                    <Text style={styles.photoEmptyTitle}>Add at least 1 photo</Text>
-                    <Text style={styles.photoEmptySubtitle}>You can add up to {maxPhotos} photos.</Text>
+                    <Text style={styles.photoEmptyTitle}>{t('registration.photoEmptyTitle')}</Text>
+                    <Text style={styles.photoEmptySubtitle}>{t('registration.photoEmptySubtitle', { max: maxPhotos })}</Text>
                   </View>
                 )}
               </View>
@@ -412,7 +414,7 @@ export function RegistrationFlow({ onBack }: RegistrationFlowProps) {
       {/* Bottom Button */}
       <View style={styles.buttonContainer}>
         <FormButton
-          title={step === totalSteps ? (loading ? "Registering..." : "✓ Complete Registration") : "Continue →"}
+          title={step === totalSteps ? (loading ? t('registration.registering') : t('registration.completeRegistrationCta')) : t('registration.continue')}
           onPress={handleNext}
           loading={loading}
         />

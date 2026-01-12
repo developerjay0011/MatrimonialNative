@@ -25,7 +25,7 @@ export const uploadPhoto = async (photo: any, isProfilePhoto: boolean = false) =
         showToast(response?.data?.message, { type: response?.data?.success ? 'success' : 'error' });
         return response.data;
     } catch (error: any) {
-        showToast(error?.message || 'Failed to upload photo', { type: 'error' });
+        showToast(error?.response?.data?.message || 'Failed to upload photo', { type: 'error' });
         throw error;
     }
 };
@@ -48,7 +48,7 @@ export const deletePhoto = async (photoId: string) => {
         }
         return { success: false, message: 'No response from server' };
     } catch (error: any) {
-        showToast(error?.message || 'Failed to delete photo', { type: 'error' });
+        showToast(error?.response?.data?.message || 'Failed to delete photo', { type: 'error' });
         throw error;
     }
 };

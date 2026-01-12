@@ -162,8 +162,8 @@ export const styles = StyleSheet.create({
         color: '#111827',
     },
     verifiedBadge: {
-        width: 20,
-        height: 20,
+        width: 15,
+        height: 15,
         backgroundColor: '#3b82f6',
         borderRadius: 10,
         alignItems: 'center',
@@ -172,7 +172,7 @@ export const styles = StyleSheet.create({
     },
     verifiedText: {
         color: '#ffffff',
-        fontSize: 11,
+        fontSize: 8,
         fontWeight: '600',
     },
     profileDetail: {
@@ -198,9 +198,14 @@ export const styles = StyleSheet.create({
         backgroundColor: '#22c55e',
     },
     profileTags: {
-        flexDirection: 'row',
         gap: 8,
-        flex: 1,
+        flexDirection: 'row',
+        backgroundColor: '#fef3f2',
+        padding: 4,
+        paddingHorizontal: 8,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#fee2e2',
     },
     heightTag: {
         fontSize: 11,
@@ -241,5 +246,14 @@ export const styles = StyleSheet.create({
         fontSize: 14,
         color: '#6b7280',
         fontWeight: '500',
+    },
+    listFooter: {
+        paddingVertical: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    listFooterText: {
+        fontSize: 13,
+        color: '#9ca3af',
     },
 });

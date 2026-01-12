@@ -26,6 +26,7 @@ const MARITAL_STATUS_OPTIONS = [
     { label: 'Never Married', value: 'never_married' },
     { label: 'Divorced', value: 'divorced' },
     { label: 'Widowed', value: 'widowed' },
+    { label: 'Awaiting Divorce', value: 'awaiting_divorce' },
 ];
 
 export function EditProfileScreen({ onBack, currentUser }: EditProfileScreenProps) {
@@ -188,7 +189,7 @@ export function EditProfileScreen({ onBack, currentUser }: EditProfileScreenProp
                 if (response?.success) { fetchProfile() }
             }
         } catch (error: any) {
-            showToast(error?.message || 'Failed to upload photo', { type: 'error' });
+            showToast(error?.response?.data?.message || 'Failed to upload photo', { type: 'error' });
         }
     };
 

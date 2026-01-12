@@ -54,13 +54,13 @@ export const styles = StyleSheet.create({
     },
     onlineBadge: {
         position: 'absolute',
-        bottom: 2,
-        right: 2,
+        bottom: 0,
+        right: -1,
         width: 14,
         height: 14,
         borderRadius: 7,
         backgroundColor: '#22c55e',
-        borderWidth: 2,
+        borderWidth: 3,
         borderColor: '#ffffff',
     },
     chatContent: {
@@ -97,7 +97,6 @@ export const styles = StyleSheet.create({
         backgroundColor: '#f97316',
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 8,
     },
     unreadText: {
         fontSize: 12,
@@ -106,5 +105,69 @@ export const styles = StyleSheet.create({
     },
     moreButton: {
         padding: 4,
+    },
+    selectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 16,
+    },
+    closeButton: {
+        padding: 4,
+    },
+    chatItemSelected: {
+        backgroundColor: '#fef3f2',
+    },
+    selectionCheckbox: {
+        position: 'absolute',
+        bottom: 0,
+        right: -2,
+    },
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: '#d1d5db',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ffffff',
+    },
+    checkboxSelected: {
+        backgroundColor: '#f97316',
+        borderColor: '#f97316',
+    },
+    checkmark: {
+        color: '#ffffff',
+        fontSize: 10,
+        fontWeight: '600',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    actionMenu: {
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        width: '80%',
+        maxWidth: 300,
+        overflow: 'hidden',
+    },
+    actionMenuItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        gap: 12,
+    },
+    actionMenuText: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#111827',
+    },
+    actionMenuDivider: {
+        height: 1,
+        backgroundColor: '#f3f4f6',
     },
 });

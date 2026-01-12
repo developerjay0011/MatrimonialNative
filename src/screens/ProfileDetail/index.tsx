@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { ArrowLeft, Heart, MessageCircle, MapPin, Briefcase } from "lucide-react-native";
 import { useTranslation } from 'react-i18next';
 import { CustomSafeAreaView } from '../../components/CustomSafeAreaView';
-import { getProfileById } from "../../data/mockProfiles";
 import { styles } from './styles';
 import { getUserProfile } from '../../redux/actions/profile';
 import { sendInterest } from '../../redux/actions/interests';
 import { createChat } from '../../redux/actions/chat';
 import { showToast } from '../../utils/toast';
 import { SkeletonProfileDetail } from '../../components/skeletons';
+import { goBack } from '../../navigation/RootNavigation';
+import { ImageCarousel } from '../../components/common/ImageCarousel';
 
 interface ProfileDetailScreenProps {
     profileId: string;
@@ -28,21 +28,18 @@ export function ProfileDetailScreen({
     const [loading, setLoading] = useState(true);
     const [sendingInterest, setSendingInterest] = useState(false);
 
-    useEffect(() => {
-        fetchProfile();
-    }, [profileId]);
+    useEffect(() => { fetchProfile() }, [profileId]);
 
     const fetchProfile = async () => {
         try {
             setLoading(true);
             const response = await getUserProfile(profileId);
-            if (response.success && response.data) {
-                setProfile(response.data);
-            } else {
-                setProfile(getProfileById(profileId));
-            }
-        } catch (error) {
-            setProfile(getProfileById(profileId));
+            if (response?.success && response?.data) {
+                setProfile(response?.data);
+            } else { throw new Error(response?.data?.message || 'Failed to load profile') }
+        } catch (error: any) {
+            goBack();
+            showToast(error?.response?.data?.message || 'Failed to load profile', { type: 'error' });
         } finally {
             setLoading(false);
         }
@@ -58,7 +55,7 @@ export function ProfileDetailScreen({
                 showToast(response.message || 'Failed to send interest', { type: 'error' });
             }
         } catch (error: any) {
-            showToast(error?.message || 'Failed to send interest', { type: 'error' });
+            showToast(error?.response?.data?.message || 'Failed to send interest', { type: 'error' });
         } finally {
             setSendingInterest(false);
         }
@@ -77,7 +74,8 @@ export function ProfileDetailScreen({
         }
     };
 
-    if (loading) {
+
+    if (loading || !profile) {
         return (
             <CustomSafeAreaView
                 barColor="#f9fafb"
@@ -92,19 +90,6 @@ export function ProfileDetailScreen({
         );
     }
 
-    if (!profile) {
-        return (
-            <CustomSafeAreaView
-                barColor="#f9fafb"
-                barStyle="dark-content"
-                edges={['top', 'right', 'bottom', 'left']}
-                style={styles.container}
-            >
-                <Text>Profile not found</Text>
-            </CustomSafeAreaView>
-        );
-    }
-
     return (
         <CustomSafeAreaView
             barColor="#f9fafb"
@@ -113,12 +98,13 @@ export function ProfileDetailScreen({
             style={styles.container}
         >
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-                {/* Header Image */}
+                {/* Header Image Carousel */}
                 <View style={styles.imageContainer}>
-                    <Image
-                        source={{ uri: profile.profilePhoto || profile.photos?.[0]?.url }}
-                        style={styles.profileImage}
-                        resizeMode="contain"
+                    <ImageCarousel
+                        height={380}
+                        showIndicators={true}
+                        enableFullScreen={true}
+                        photos={profile?.photos || []}
                     />
 
                     <TouchableOpacity
@@ -128,26 +114,23 @@ export function ProfileDetailScreen({
                         <ArrowLeft size={20} color="#374151" />
                     </TouchableOpacity>
 
-                    <View style={styles.matchBadge}>
-                        <Text style={styles.matchText}>
-                            ⭐ {profile.matchPercentage}% Match
-                        </Text>
-                    </View>
+                    {profile?.profile?.isProfileVerified && (
+                        <View style={styles.verifiedTopBadge}>
+                            <Text style={styles.verifiedTopText}>✓ {t('profile.verified')}</Text>
+                        </View>
+                    )}
                 </View>
 
                 {/* Profile Content */}
-                <Animated.View
-                    entering={FadeInUp.delay(200)}
-                    style={styles.contentContainer}
-                >
+                <View style={styles.contentContainer}>
                     <View style={styles.content}>
                         <View style={styles.headerSection}>
                             <View style={styles.nameContainer}>
                                 <View style={styles.nameRow}>
                                     <Text style={styles.name}>
-                                        {profile.name || profile.fullName}, {profile.age}
+                                        {profile?.profile?.fullName}, {profile?.profile?.age}
                                     </Text>
-                                    {profile.verified && (
+                                    {profile?.profile?.isProfileVerified && (
                                         <View style={styles.verifiedBadge}>
                                             <Text style={styles.verifiedText}>✓</Text>
                                         </View>
@@ -155,25 +138,28 @@ export function ProfileDetailScreen({
                                 </View>
                                 <View style={styles.infoRow}>
                                     <MapPin size={16} color="#6b7280" />
-                                    <Text style={styles.infoText}>{profile.city}, Gujarat</Text>
+                                    <Text style={styles.infoText}>
+                                        {profile?.profile?.currentCity}, {profile?.profile?.currentState}
+                                    </Text>
                                 </View>
                                 <View style={styles.infoRow}>
                                     <Briefcase size={16} color="#6b7280" />
-                                    <Text style={styles.infoText}>{profile.occupation}</Text>
+                                    <Text style={styles.infoText}>{profile?.profile?.occupation}</Text>
                                 </View>
                             </View>
-                            {profile.online && (
-                                <View style={styles.onlineBadge}>
-                                    <Text style={styles.onlineText}>Online</Text>
+                            {profile?.status === 'active' && (
+                                <View style={styles.statusBadge}>
+                                    <View style={styles.statusDot} />
+                                    <Text style={styles.statusText}>{t('profile.active')}</Text>
                                 </View>
                             )}
                         </View>
 
                         {/* About Section */}
-                        {profile.bio && (
+                        {profile?.profile?.aboutMe && (
                             <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>{t('profile.about')}</Text>
-                                <Text style={styles.bioText}>{profile.bio}</Text>
+                                <Text style={[styles.sectionTitle, { marginBottom: 10 }]}>{t('profile.about')}</Text>
+                                <Text style={styles.bioText}>{profile?.profile?.aboutMe}</Text>
                             </View>
                         )}
 
@@ -183,80 +169,124 @@ export function ProfileDetailScreen({
                             <View style={styles.detailsGrid}>
                                 <View style={styles.detailItem}>
                                     <Text style={styles.detailLabel}>{t('profile.age')}</Text>
-                                    <Text style={styles.detailValue}>{profile.age} years</Text>
+                                    <Text style={styles.detailValue}>{profile?.profile?.age} years</Text>
                                 </View>
                                 <View style={styles.detailItem}>
                                     <Text style={styles.detailLabel}>{t('profile.height')}</Text>
-                                    <Text style={styles.detailValue}>{profile.height}</Text>
+                                    <Text style={styles.detailValue}>{profile?.profile?.height} cm</Text>
+                                </View>
+                                <View style={styles.detailItem}>
+                                    <Text style={styles.detailLabel}>{t('profile.weight')}</Text>
+                                    <Text style={styles.detailValue}>{profile?.profile?.weight} kg</Text>
                                 </View>
                                 <View style={styles.detailItem}>
                                     <Text style={styles.detailLabel}>{t('profile.maritalStatus')}</Text>
-                                    <Text style={styles.detailValue}>{profile.maritalStatus}</Text>
+                                    <Text style={styles.detailValue}>
+                                        {profile?.profile?.maritalStatus?.replace('_', ' ')}
+                                    </Text>
                                 </View>
                                 <View style={styles.detailItem}>
-                                    <Text style={styles.detailLabel}>{t('profile.diet')}</Text>
-                                    <Text style={styles.detailValue}>{profile.diet}</Text>
+                                    <Text style={styles.detailLabel}>{t('profile.religion')}</Text>
+                                    <Text style={styles.detailValue}>{profile?.profile?.religion}</Text>
+                                </View>
+                                <View style={styles.detailItem}>
+                                    <Text style={styles.detailLabel}>{t('profile.caste')}</Text>
+                                    <Text style={styles.detailValue}>{profile?.profile?.caste}</Text>
+                                </View>
+                                <View style={styles.detailItem}>
+                                    <Text style={styles.detailLabel}>{t('profile.motherTongue')}</Text>
+                                    <Text style={styles.detailValue}>{profile?.profile?.motherTongue}</Text>
+                                </View>
+                                <View style={styles.detailItem}>
+                                    <Text style={styles.detailLabel}>{t('profile.nativePlace')}</Text>
+                                    <Text style={styles.detailValue}>{profile?.profile?.nativeCountry}</Text>
                                 </View>
                             </View>
                         </View>
 
                         {/* Professional Details */}
                         <View style={styles.section}>
-                            <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionIcon}>💼</Text>
-                                <Text style={styles.sectionTitle}>💼 {t('profile.professionalDetails')}</Text>
-                            </View>
+                            <Text style={styles.sectionTitle}>{t('profile.professionalDetails')}</Text>
                             <View style={styles.detailsGrid}>
-                                <View style={styles.detailItem}>
+                                <View style={[styles.detailItem, { width: '100%' }]}>
                                     <Text style={styles.detailLabel}>{t('profile.education')}</Text>
-                                    <Text style={styles.detailValue}>{profile.education}</Text>
-                                </View>
-                                <View style={styles.detailItem}>
-                                    <Text style={styles.detailLabel}>{t('profile.occupation')}</Text>
-                                    <Text style={styles.detailValue}>{profile.occupation}</Text>
+                                    <Text style={styles.detailValue}>{profile?.profile?.education}</Text>
                                 </View>
                                 <View style={[styles.detailItem, { width: '100%' }]}>
-                                    <Text style={styles.detailLabel}>{t('profile.income')}</Text>
-                                    <Text style={styles.detailValue}>{profile.income}</Text>
+                                    <Text style={styles.detailLabel}>{t('profile.occupation')}</Text>
+                                    <Text style={styles.detailValue}>{profile?.profile?.occupation}</Text>
                                 </View>
+                                {profile?.profile?.workLocation && (
+                                    <View style={[styles.detailItem, { width: '100%' }]}>
+                                        <Text style={styles.detailLabel}>{t('profile.workLocation')}</Text>
+                                        <Text style={styles.detailValue}>{profile?.profile?.workLocation}</Text>
+                                    </View>
+                                )}
                             </View>
                         </View>
 
                         {/* Family Details */}
-                        <View style={styles.section}>
-                            <View style={styles.sectionHeader}>
-                                <Text style={styles.sectionIcon}>👨‍👩‍👧‍👦</Text>
-                                <Text style={styles.sectionTitle}>👨‍👩‍👧‍👦 {t('profile.familyDetails')}</Text>
+                        {profile?.familyDetails && (
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>{t('profile.familyDetails')}</Text>
+                                <View style={styles.detailsGrid}>
+                                    <View style={[styles.detailItem, { width: '100%' }]}>
+                                        <Text style={styles.detailLabel}>{t('profile.familyType')}</Text>
+                                        <Text style={styles.detailValue}>
+                                            {profile?.familyDetails?.familyType?.replace('_', ' ')}
+                                        </Text>
+                                    </View>
+                                    <View style={[styles.detailItem, { width: '100%' }]}>
+                                        <Text style={styles.detailLabel}>{t('profile.father')}</Text>
+                                        <Text style={styles.detailValue}>
+                                            {profile?.familyDetails?.fatherName} - {profile?.familyDetails?.fatherOccupation}
+                                        </Text>
+                                    </View>
+                                    <View style={[styles.detailItem, { width: '100%' }]}>
+                                        <Text style={styles.detailLabel}>{t('profile.mother')}</Text>
+                                        <Text style={styles.detailValue}>
+                                            {profile?.familyDetails?.motherName} - {profile?.familyDetails?.motherOccupation}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.detailItem}>
+                                        <Text style={styles.detailLabel}>{t('profile.brothers')}</Text>
+                                        <Text style={styles.detailValue}>
+                                            {profile?.familyDetails?.brothers} ({profile?.familyDetails?.marriedBrothers} {t('profile.married')})
+                                        </Text>
+                                    </View>
+                                    <View style={styles.detailItem}>
+                                        <Text style={styles.detailLabel}>{t('profile.sisters')}</Text>
+                                        <Text style={styles.detailValue}>
+                                            {profile?.familyDetails?.sisters} ({profile?.familyDetails?.marriedSisters} {t('profile.married')})
+                                        </Text>
+                                    </View>
+                                </View>
                             </View>
-                            <View style={styles.familyDetails}>
-                                <Text style={styles.familyText}>• Family Type: {profile.familyType}</Text>
-                                <Text style={styles.familyText}>• Father: {profile.fatherOccupation}</Text>
-                                <Text style={styles.familyText}>• Mother: {profile.motherOccupation}</Text>
-                                <Text style={styles.familyText}>• Siblings: {profile.siblings}</Text>
-                            </View>
-                        </View>
+                        )}
 
                         <View style={{ height: 100 }} />
                     </View>
-                </Animated.View>
+                </View>
             </ScrollView>
 
             {/* Action Buttons */}
             <View style={styles.actionButtons}>
-                <TouchableOpacity
-                    style={styles.interestButton}
-                    onPress={handleSendInterest}
-                    disabled={sendingInterest}
-                >
-                    {sendingInterest ? (
-                        <ActivityIndicator size="small" color="#ffffff" />
-                    ) : (
-                        <>
-                            <Heart size={20} color="#ffffff" />
-                            <Text style={styles.interestButtonText}>{t('profile.sendInterest')}</Text>
-                        </>
-                    )}
-                </TouchableOpacity>
+                {!profile?.hasInterestSent && (
+                    <TouchableOpacity
+                        style={styles.interestButton}
+                        onPress={handleSendInterest}
+                        disabled={sendingInterest}
+                    >
+                        {sendingInterest ? (
+                            <ActivityIndicator size="small" color="#ffffff" />
+                        ) : (
+                            <>
+                                <Heart size={20} color="#ffffff" />
+                                <Text style={styles.interestButtonText}>{t('profile.sendInterest')}</Text>
+                            </>
+                        )}
+                    </TouchableOpacity>
+                )}
                 <TouchableOpacity
                     style={styles.chatButton}
                     onPress={handleStartChat}

@@ -81,7 +81,7 @@ export function SettingsScreen({
             barColor="#f97316"
             style={styles.container}
             barStyle="light-content"
-            edges={['right', 'bottom', 'left']}
+            edges={['right', 'left']}
             headerComponent={(insets) => (
                 <LinearGradient
                     colors={['#f97316', '#ea580c']}
@@ -103,12 +103,12 @@ export function SettingsScreen({
                         />
                         <MenuItem
                             icon={Users}
-                            title="Family Information"
+                            title={t('settings.familyInformation')}
                             onPress={onFamilyInfo}
                         />
                         <MenuItem
                             icon={Images}
-                            title="Manage Gallery"
+                            title={t('settings.manageGallery')}
                             onPress={onManageGallery}
                         />
                         <MenuItem
@@ -136,7 +136,7 @@ export function SettingsScreen({
                         <MenuItem
                             icon={Globe}
                             title={t('settings.language')}
-                            subtitle="English"
+                            subtitle={t('language.english')}
                             onPress={onLanguage}
                         />
                     </View>
@@ -161,7 +161,7 @@ export function SettingsScreen({
 
                 {/* Account Actions Section */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>ACCOUNT ACTIONS</Text>
+                    <Text style={styles.sectionTitle}>{t('settings.accountActions').toUpperCase()}</Text>
                     <View style={styles.sectionContent}>
                         <MenuItem
                             icon={Trash2}
@@ -179,8 +179,8 @@ export function SettingsScreen({
 
                 {/* App Info */}
                 <View style={styles.appInfo}>
-                    <Text style={styles.appInfoText}>Dhimmar Samaj Matrimony</Text>
-                    <Text style={styles.appVersion}>Version 1.0.0</Text>
+                    <Text style={styles.appInfoText}>{t('app.name')}</Text>
+                    <Text style={styles.appVersion}>{t('app.version', { version: '1.0.0' })}</Text>
                 </View>
 
                 <LogoutDialog

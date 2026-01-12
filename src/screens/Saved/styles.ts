@@ -34,7 +34,7 @@ export const styles = StyleSheet.create({
     },
     tabText: {
         fontSize: 14,
-        fontWeight: '500',
+        fontWeight: '700',
         color: 'rgba(255,255,255,0.9)',
     },
     activeTabText: {
@@ -197,5 +197,34 @@ export const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: '600',
         color: '#ffffff',
+    },
+    emptyStateContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 40,
+        paddingVertical: 80,
+    },
+    emptyIconContainer: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: '#fef3f2',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 24,
+    },
+    emptyTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#111827',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    emptyMessage: {
+        fontSize: 15,
+        color: '#6b7280',
+        textAlign: 'center',
+        lineHeight: 22,
     },
 });

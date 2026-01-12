@@ -5,6 +5,7 @@ import { TabNavigator } from './TabNavigator';
 
 import { SplashScreen } from '../screens/Splash';
 import { LoginScreen } from '../screens/Login';
+import { ForgotPasswordScreen } from '../screens/ForgotPassword';
 import { RegistrationFlow } from '../screens/Registration';
 import { ProfileDetailScreen } from '../screens/ProfileDetail';
 import { ChatScreen } from '../screens/Chat';
@@ -34,6 +35,16 @@ export function AppNavigator() {
                     <LoginScreen
                         {...props}
                         onRegister={() => props.navigation.navigate('Registration')}
+                        onForgotPassword={() => props.navigation.navigate('ForgotPassword')}
+                    />
+                )}
+            </Stack.Screen>
+
+            <Stack.Screen name="ForgotPassword">
+                {(props) => (
+                    <ForgotPasswordScreen
+                        {...props}
+                        onBack={() => props.navigation.goBack()}
                     />
                 )}
             </Stack.Screen>
@@ -63,14 +74,6 @@ export function AppNavigator() {
                         onLanguage={() => props.navigation.navigate('Language')}
                         onHelpSupport={() => props.navigation.navigate('HelpSupport')}
                         onSafetyTips={() => props.navigation.navigate('SafetyTips')}
-                        onDeactivate={() => {
-                            setCurrentUser(null);
-                            props.navigation.replace('Login');
-                        }}
-                        onLogout={() => {
-                            setCurrentUser(null);
-                            props.navigation.replace('Login');
-                        }}
                     />
                 )}
             </Stack.Screen>

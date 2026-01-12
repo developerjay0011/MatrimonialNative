@@ -34,7 +34,6 @@ export function FormSkeleton({ sections = 3, fieldsPerSection = 4 }: FormSkeleto
 
 const styles = StyleSheet.create({
     container: {
-        padding: 16,
     },
     section: {
         backgroundColor: '#ffffff',

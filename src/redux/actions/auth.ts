@@ -47,7 +47,7 @@ export const registerUser = (userData: any) => {
             if (response?.data?.success) { navigate('Login') }
         } catch (error: any) {
             userData?.setLoading(false);
-            showToast(error?.message, { type: 'error' });
+            showToast(error?.response?.data?.message, { type: 'error' });
             throw error;
         }
     };

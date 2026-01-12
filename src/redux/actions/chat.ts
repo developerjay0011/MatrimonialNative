@@ -37,7 +37,7 @@ export const sendMessage = async (chatId: string, content: string, messageType: 
         });
         return response.data;
     } catch (error: any) {
-        showToast(error?.message || 'Failed to send message', { type: 'error' });
+        showToast(error?.response?.data?.message || 'Failed to send message', { type: 'error' });
         throw error;
     }
 };
@@ -55,7 +55,7 @@ export const createChat = async (userId: string) => {
 
         return response.data;
     } catch (error: any) {
-        showToast(error?.message || 'Failed to create chat', { type: 'error' });
+        showToast(error?.response?.data?.message || 'Failed to create chat', { type: 'error' });
         throw error;
     }
 };
@@ -72,7 +72,7 @@ export const deleteChat = async (chatId: string) => {
 
         return response.data;
     } catch (error: any) {
-        showToast(error?.message || 'Failed to delete chat', { type: 'error' });
+        showToast(error?.response?.data?.message || 'Failed to delete chat', { type: 'error' });
         throw error;
     }
 };

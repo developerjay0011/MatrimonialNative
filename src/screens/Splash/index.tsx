@@ -17,9 +17,11 @@ import { StorageService } from '../../utils/storage';
 import { replace } from '../../navigation/RootNavigation';
 import LinearGradient from 'react-native-linear-gradient';
 import { CustomSafeAreaView } from '../../components/CustomSafeAreaView';
+import { useTranslation } from 'react-i18next';
 
 export function SplashScreen() {
   // Animation values
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const containerOpacity = useSharedValue(0);
   const containerScale = useSharedValue(0.5);
@@ -117,12 +119,12 @@ export function SplashScreen() {
           <Animated.Text
             style={[titleStyle, styles.title]}
           >
-            Dhimmar Samaj
+            {t('app.shortName')}
           </Animated.Text>
 
           {/* Tagline */}
           <Animated.Text style={[subtitleStyle, styles.subtitle]}>
-            Find Your Perfect Match
+            {t('app.tagline')}
           </Animated.Text>
 
           {/* Loading Indicator */}
@@ -132,7 +134,7 @@ export function SplashScreen() {
 
         {/* Bottom Text */}
         <Animated.View style={[footerStyle, styles.footer]}>
-          <Text style={styles.footerText}>Connecting Hearts, Building Futures</Text>
+          <Text style={styles.footerText}>{t('app.footerTagline')}</Text>
         </Animated.View>
       </LinearGradient>
     </CustomSafeAreaView>

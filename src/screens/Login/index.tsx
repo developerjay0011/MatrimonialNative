@@ -22,9 +22,10 @@ import { sendOTP, verifyOTP, loginUser } from "../../redux/actions/auth";
 
 interface LoginScreenProps {
   onRegister: () => void;
+  onForgotPassword: () => void;
 }
 
-export function LoginScreen({ onRegister }: LoginScreenProps) {
+export function LoginScreen({ onRegister, onForgotPassword }: LoginScreenProps) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const [loginMethod, setLoginMethod] = useState<"phone" | "email">("phone");
@@ -115,8 +116,8 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
             >
               <Text style={styles.logoText}>❤️</Text>
             </Animated.View>
-            <Text style={styles.headerTitle}>Welcome Back</Text>
-            <Text style={styles.headerSubtitle}>Login to find your life partner</Text>
+            <Text style={styles.headerTitle}>{t('login.title')}</Text>
+            <Text style={styles.headerSubtitle}>{t('login.subtitle')}</Text>
           </LinearGradient>
         </Animated.View>
       )}
@@ -136,7 +137,7 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
               style={[styles.methodButton, loginMethod === "phone" && styles.methodButtonActive]}
             >
               <Text style={[styles.methodText, loginMethod === "phone" && styles.methodTextActive]}>
-                📱 Phone
+                📱 {t('login.phoneTab')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -144,7 +145,7 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
               style={[styles.methodButton, loginMethod === "email" && styles.methodButtonActive]}
             >
               <Text style={[styles.methodText, loginMethod === "email" && styles.methodTextActive]}>
-                ✉️ Email
+                ✉️ {t('login.emailTab')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -154,7 +155,7 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
             <Animated.View entering={FadeInLeft}>
               <View>
                 <Text style={styles.inputLabel}>
-                  Mobile Number
+                  {t('login.phoneNumber')}
                 </Text>
                 <View style={styles.phoneRow}>
                   <View style={styles.countryCodeBox}>
@@ -165,7 +166,7 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
                     maxLength={10}
                     value={phoneNumber}
                     onChangeText={(val) => setPhoneNumber(val.replace(/\D/g, ""))}
-                    placeholder="Enter 10 digit mobile"
+                    placeholder={t('login.phonePlaceholder')}
                     editable={!otpSent}
                     style={[styles.textInput, styles.phoneInput]}
                     placeholderTextColor="#9ca3af"
@@ -176,28 +177,28 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
               {otpSent && (
                 <Animated.View entering={FadeInUp} style={styles.otpContainer}>
                   <Text style={styles.inputLabel}>
-                    Enter OTP
+                    {t('login.otpLabel')}
                   </Text>
                   <TextInput
                     keyboardType="number-pad"
                     maxLength={6}
                     value={otp}
                     onChangeText={(val) => setOtp(val.replace(/\D/g, ""))}
-                    placeholder="6-digit OTP"
+                    placeholder={t('login.otpPlaceholder')}
                     style={styles.otpInput}
                     placeholderTextColor="#9ca3af"
                   />
                   <View style={styles.otpFooter}>
                     <Text style={styles.otpHint}>
-                      OTP sent to +91 {phoneNumber}
+                      {t('login.otpSentTo', { phone: phoneNumber })}
                     </Text>
                     {canResend ? (
                       <TouchableOpacity onPress={handleSendOTP} disabled={loading}>
-                        <Text style={styles.resendText}>Resend OTP</Text>
+                        <Text style={styles.resendText}>{t('login.resendOtp')}</Text>
                       </TouchableOpacity>
                     ) : (
                       <Text style={styles.timerText}>
-                        Resend in {resendTimer}s
+                        {t('login.resendIn', { seconds: resendTimer })}
                       </Text>
                     )}
                   </View>
@@ -213,7 +214,7 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
                   {loading ? (
                     <ActivityIndicator color="#ffffff" />
                   ) : (
-                    <Text style={styles.primaryButtonText}>Send OTP</Text>
+                    <Text style={styles.primaryButtonText}>{t('login.sendOtp')}</Text>
                   )}
                 </TouchableOpacity>
               ) : (
@@ -226,7 +227,7 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
                     {loading ? (
                       <ActivityIndicator color="#ffffff" />
                     ) : (
-                      <Text style={styles.primaryButtonText}>Verify & Login</Text>
+                      <Text style={styles.primaryButtonText}>{t('login.verifyLogin')}</Text>
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -237,7 +238,7 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
                     }}
                     style={styles.centerAlign}
                   >
-                    <Text style={styles.linkText}>Change Number</Text>
+                    <Text style={styles.linkText}>{t('login.changeNumber')}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -249,14 +250,14 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
             <Animated.View entering={FadeInRight}>
               <View style={styles.sectionSpacing}>
                 <Text style={styles.inputLabel}>
-                  Email Address
+                  {t('login.email')}
                 </Text>
                 <TextInput
                   keyboardType="email-address"
                   autoCapitalize="none"
                   value={email}
                   onChangeText={setEmail}
-                  placeholder="your@email.com"
+                  placeholder={t('login.emailPlaceholder')}
                   style={styles.textInput}
                   placeholderTextColor="#9ca3af"
                 />
@@ -264,13 +265,13 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
 
               <View style={styles.sectionSpacingLarge}>
                 <Text style={styles.inputLabel}>
-                  Password
+                  {t('login.password')}
                 </Text>
                 <TextInput
                   secureTextEntry
                   value={password}
                   onChangeText={setPassword}
-                  placeholder="Enter password"
+                  placeholder={t('login.passwordPlaceholder')}
                   style={styles.textInput}
                   placeholderTextColor="#9ca3af"
                 />
@@ -284,12 +285,12 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
                 {loading ? (
                   <ActivityIndicator color="#ffffff" />
                 ) : (
-                  <Text style={styles.primaryButtonText}>Login</Text>
+                  <Text style={styles.primaryButtonText}>{t('login.login')}</Text>
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.centerAlign}>
-                <Text style={styles.linkText}>Forgot Password?</Text>
+              <TouchableOpacity style={styles.centerAlign} onPress={onForgotPassword}>
+                <Text style={styles.linkText}>{t('login.forgotPassword')}</Text>
               </TouchableOpacity>
             </Animated.View>
           )}
@@ -300,9 +301,9 @@ export function LoginScreen({ onRegister }: LoginScreenProps) {
           entering={FadeInUp.delay(500)}
           style={styles.registerContainer}
         >
-          <Text style={styles.registerPrompt}>Don't have an account?</Text>
+          <Text style={styles.registerPrompt}>{t('login.dontHaveAccount')}</Text>
           <TouchableOpacity onPress={onRegister}>
-            <Text style={styles.registerLink}>Create New Account</Text>
+            <Text style={styles.registerLink}>{t('login.createNewAccount')}</Text>
           </TouchableOpacity>
         </Animated.View>
       </ScrollView>

@@ -31,7 +31,6 @@ const styles = StyleSheet.create({
     card: {
         backgroundColor: '#fff',
         borderRadius: 16,
-        marginHorizontal: 16,
         marginVertical: 8,
         overflow: 'hidden',
     },

@@ -41,7 +41,7 @@ export const shortlistMatch = async (userId: string) => {
 
         return response.data;
     } catch (error: any) {
-        showToast(error?.message || 'Failed to shortlist profile', { type: 'error' });
+        showToast(error?.response?.data?.message || 'Failed to shortlist profile', { type: 'error' });
         throw error;
     }
 };
@@ -58,7 +58,7 @@ export const removeShortlist = async (userId: string) => {
 
         return response.data;
     } catch (error: any) {
-        showToast(error?.message || 'Failed to remove from shortlist', { type: 'error' });
+        showToast(error?.response?.data?.message || 'Failed to remove from shortlist', { type: 'error' });
         throw error;
     }
 };

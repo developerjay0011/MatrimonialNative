@@ -6,7 +6,7 @@ import { SearchScreen } from '../screens/Search';
 import { ChatsListScreen } from '../screens/Chats';
 import { ShortlistedScreen } from '../screens/Saved';
 import { SettingsScreen } from '../screens/Settings';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator();
 
@@ -124,14 +124,13 @@ export function TabNavigator({
             <Tab.Screen
                 name="SavedTab"
                 options={{
-                    tabBarLabel: 'Saved',
+                    tabBarLabel: 'Interests',
                     tabBarIcon: ({ color, size }) => <Heart size={size} color={color} />,
                 }}
             >
                 {(props) => (
                     <ShortlistedScreen
                         {...props}
-                        onBack={() => props.navigation.navigate('HomeTab')}
                         onViewProfile={onViewProfile}
                     />
                 )}

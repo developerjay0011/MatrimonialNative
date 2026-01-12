@@ -74,10 +74,7 @@ export function DeactivateDialog({ isOpen, onClose, onConfirm }: DialogProps) {
                     </Text>
 
                     <View style={styles.noteBox}>
-                        <Text style={styles.noteTitle}>{t('dialogs.deactivateNote')}</Text>
-                        <Text style={styles.noteText}>
-                            {t('dialogs.deactivateNoteText')}
-                        </Text>
+                        <Text style={styles.noteTitle}>{t('dialogs.deactivateNote')} <Text style={styles.noteText}>{t('dialogs.deactivateNoteText')}</Text></Text>
                     </View>
 
                     <View style={styles.buttonRow}>

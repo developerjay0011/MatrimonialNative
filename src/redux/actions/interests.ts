@@ -22,7 +22,7 @@ export const sendInterest = async (toUserId: string, message?: string) => {
 
         return response.data;
     } catch (error: any) {
-        showToast(error?.message || 'Failed to send interest', { type: 'error' });
+        showToast(error?.response?.data?.message || 'Failed to send interest', { type: 'error' });
         throw error;
     }
 };
@@ -57,7 +57,7 @@ export const acceptInterest = async (interestId: string) => {
 
         return response.data;
     } catch (error: any) {
-        showToast(error?.message || 'Failed to accept interest', { type: 'error' });
+        showToast(error?.response?.data?.message || 'Failed to accept interest', { type: 'error' });
         throw error;
     }
 };
@@ -74,7 +74,7 @@ export const rejectInterest = async (interestId: string) => {
 
         return response.data;
     } catch (error: any) {
-        showToast(error?.message || 'Failed to reject interest', { type: 'error' });
+        showToast(error?.response?.data?.message || 'Failed to reject interest', { type: 'error' });
         throw error;
     }
 };

@@ -11,12 +11,14 @@ import { uploadPhoto, deletePhoto } from '../../redux/actions/photos';
 import { CustomSafeAreaView } from '../../components/CustomSafeAreaView';
 import { ConfirmationModal } from '../../components/common/ConfirmationModal';
 import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 interface ManageGalleryScreenProps {
     onBack: () => void;
 }
 
 export function ManageGalleryScreen({ onBack }: ManageGalleryScreenProps) {
+    const { t } = useTranslation();
     const maxPhotos = 6;
     const isFocused = useIsFocused();
     const dispatch = useAppDispatch();
@@ -32,7 +34,7 @@ export function ManageGalleryScreen({ onBack }: ManageGalleryScreenProps) {
 
     const handleAddPhoto = async () => {
         if (photos.length >= maxPhotos) {
-            showToast(`You can only upload up to ${maxPhotos} photos`, { type: 'error' });
+            showToast(t('gallery.maxPhotosError', { max: maxPhotos }), { type: 'error' });
             return;
         }
         try {
@@ -73,7 +75,7 @@ export function ManageGalleryScreen({ onBack }: ManageGalleryScreenProps) {
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <ArrowLeft size={24} color="#ffffff" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Manage Gallery</Text>
+                    <Text style={styles.headerTitle}>{t('gallery.title')}</Text>
                     <View style={{ width: 40 }} />
                 </LinearGradient>
             )}
@@ -81,9 +83,9 @@ export function ManageGalleryScreen({ onBack }: ManageGalleryScreenProps) {
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {/* Info Section */}
                 <View style={styles.infoSection}>
-                    <Text style={styles.infoTitle}>Your Photo Gallery</Text>
+                    <Text style={styles.infoTitle}>{t('gallery.yourPhotoGallery')}</Text>
                     <Text style={styles.infoText}>
-                        You can upload up to {maxPhotos} photos. ({photos.length}/{maxPhotos} uploaded)
+                        {t('gallery.uploadInfo', { max: maxPhotos, current: photos.length })}
                     </Text>
                 </View>
 
@@ -98,7 +100,7 @@ export function ManageGalleryScreen({ onBack }: ManageGalleryScreenProps) {
                             />
                             {photo.isProfilePhoto && (
                                 <View style={styles.profileBadge}>
-                                    <Text style={styles.profileBadgeText}>Profile</Text>
+                                    <Text style={styles.profileBadgeText}>{t('gallery.profileBadge')}</Text>
                                 </View>
                             )}
                             <TouchableOpacity
@@ -124,7 +126,7 @@ export function ManageGalleryScreen({ onBack }: ManageGalleryScreenProps) {
                                     <View style={styles.addPhotoIcon}>
                                         <Plus size={32} color="#f97316" />
                                     </View>
-                                    <Text style={styles.addPhotoText}>Add Photo</Text>
+                                    <Text style={styles.addPhotoText}>{t('gallery.addPhoto')}</Text>
                                 </>
                             )}
                         </TouchableOpacity>
@@ -133,22 +135,22 @@ export function ManageGalleryScreen({ onBack }: ManageGalleryScreenProps) {
 
                 {/* Guidelines */}
                 <View style={styles.guidelinesSection}>
-                    <Text style={styles.guidelinesTitle}>Photo Guidelines</Text>
+                    <Text style={styles.guidelinesTitle}>{t('gallery.guidelinesTitle')}</Text>
                     <View style={styles.guidelineItem}>
                         <Text style={styles.guidelineBullet}>•</Text>
-                        <Text style={styles.guidelineText}>Upload clear, recent photos</Text>
+                        <Text style={styles.guidelineText}>{t('gallery.guideline1')}</Text>
                     </View>
                     <View style={styles.guidelineItem}>
                         <Text style={styles.guidelineBullet}>•</Text>
-                        <Text style={styles.guidelineText}>Avoid group photos or photos with filters</Text>
+                        <Text style={styles.guidelineText}>{t('gallery.guideline2')}</Text>
                     </View>
                     <View style={styles.guidelineItem}>
                         <Text style={styles.guidelineBullet}>•</Text>
-                        <Text style={styles.guidelineText}>Photos should be appropriate and respectful</Text>
+                        <Text style={styles.guidelineText}>{t('gallery.guideline3')}</Text>
                     </View>
                     <View style={styles.guidelineItem}>
                         <Text style={styles.guidelineBullet}>•</Text>
-                        <Text style={styles.guidelineText}>Maximum file size: 5MB per photo</Text>
+                        <Text style={styles.guidelineText}>{t('gallery.guideline4')}</Text>
                     </View>
                 </View>
 
@@ -157,11 +159,11 @@ export function ManageGalleryScreen({ onBack }: ManageGalleryScreenProps) {
 
             <ConfirmationModal
                 visible={deleteModalVisible}
-                title="Delete Photo"
-                message="Are you sure you want to delete this photo? This action cannot be undone."
+                title={t('gallery.deletePhotoTitle')}
+                message={t('gallery.deletePhotoMessage')}
                 type="delete"
-                confirmText="Delete"
-                cancelText="Cancel"
+                confirmText={t('gallery.deleteConfirm')}
+                cancelText={t('common.cancel')}
                 onConfirm={confirmDeletePhoto}
                 onCancel={() => {
                     setDeleteModalVisible(false);

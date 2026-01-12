@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, RefreshControl } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, RefreshControl, Modal, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { Search, MoreVertical } from 'lucide-react-native';
+import { Search, MoreVertical, X, Trash2, Ban, Archive } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { CustomSafeAreaView } from '../../components/CustomSafeAreaView';
 import { mockProfiles } from '../../data/mockProfiles';
@@ -22,6 +22,9 @@ export function ChatsListScreen({ onOpenChat }: ChatsListScreenProps) {
     const [chats, setChats] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [selectedChats, setSelectedChats] = useState<string[]>([]);
+    const [selectionMode, setSelectionMode] = useState(false);
+    const [showActionMenu, setShowActionMenu] = useState(false);
 
     useEffect(() => {
         if (isFocused) {
@@ -75,6 +78,81 @@ export function ChatsListScreen({ onOpenChat }: ChatsListScreenProps) {
         return name.toLowerCase().includes(searchQuery.toLowerCase());
     });
 
+    const handleLongPress = (chatId: string) => {
+        setSelectionMode(true);
+        setSelectedChats([chatId]);
+    };
+
+    const handleChatPress = (chatId: string) => {
+        if (selectionMode) {
+            toggleSelection(chatId);
+        } else {
+            onOpenChat(chatId);
+        }
+    };
+
+    const toggleSelection = (chatId: string) => {
+        setSelectedChats(prev =>
+            prev.includes(chatId)
+                ? prev.filter(id => id !== chatId)
+                : [...prev, chatId]
+        );
+    };
+
+    const exitSelectionMode = () => {
+        setSelectionMode(false);
+        setSelectedChats([]);
+        setShowActionMenu(false);
+    };
+
+    const handleBlockUser = () => {
+        Alert.alert(
+            t('chats.blockUserTitle'),
+            t('chats.blockUserMessage'),
+            [
+                { text: t('common.cancel'), style: 'cancel', onPress: () => setShowActionMenu(false) },
+                {
+                    text: t('common.block'),
+                    style: 'destructive',
+                    onPress: () => {
+                        const blockedChats = chats.filter(chat =>
+                            !selectedChats.includes(chat._id || chat.id)
+                        );
+                        setChats(blockedChats);
+                        Alert.alert(t('chats.blockSuccess'));
+                        exitSelectionMode();
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleDeleteChat = () => {
+        Alert.alert(
+            t('chats.deleteChatTitle'),
+            t('chats.deleteChatMessage'),
+            [
+                { text: t('common.cancel'), style: 'cancel', onPress: () => setShowActionMenu(false) },
+                {
+                    text: t('common.delete'),
+                    style: 'destructive',
+                    onPress: () => {
+                        const remainingChats = chats.filter(chat =>
+                            !selectedChats.includes(chat._id || chat.id)
+                        );
+                        setChats(remainingChats);
+                        exitSelectionMode();
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleArchiveChat = () => {
+        Alert.alert(t('chats.archiveSuccess'));
+        exitSelectionMode();
+    };
+
     return (
         <CustomSafeAreaView
             barColor="#f97316"
@@ -86,7 +164,19 @@ export function ChatsListScreen({ onOpenChat }: ChatsListScreenProps) {
                     colors={['#f97316', '#ea580c']}
                     style={[styles.header, { paddingTop: insets.top + 15 }]}
                 >
-                    <Text style={styles.title}>Messages</Text>
+                    {selectionMode ? (
+                        <View style={styles.selectionHeader}>
+                            <TouchableOpacity onPress={exitSelectionMode} style={styles.closeButton}>
+                                <X size={24} color="#ffffff" />
+                            </TouchableOpacity>
+                            <Text style={[styles.title, { marginBottom: 0 }]}>{t('chats.selectedCount', { count: selectedChats.length })}</Text>
+                            <TouchableOpacity onPress={() => setShowActionMenu(true)} style={styles.moreButton}>
+                                <MoreVertical size={24} color="#ffffff" />
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <Text style={styles.title}>{t('chats.title')}</Text>
+                    )}
 
                     <View style={styles.searchContainer}>
                         <Search size={20} color="#ffffff" style={styles.searchIcon} />
@@ -110,8 +200,8 @@ export function ChatsListScreen({ onOpenChat }: ChatsListScreenProps) {
                     <SkeletonChatList count={6} />
                 ) : filteredChats.length === 0 ? (
                     <View style={{ padding: 40, alignItems: 'center' }}>
-                        <Text style={{ color: '#6b7280', fontSize: 16 }}>No chats yet</Text>
-                        <Text style={{ color: '#9ca3af', fontSize: 14, marginTop: 8 }}>Start connecting with matches!</Text>
+                        <Text style={{ color: '#6b7280', fontSize: 16 }}>{t('chats.noChatsTitle')}</Text>
+                        <Text style={{ color: '#9ca3af', fontSize: 14, marginTop: 8 }}>{t('chats.noChatsSubtitle')}</Text>
                     </View>
                 ) : (
                     filteredChats.map((chat: any) => {
@@ -120,44 +210,78 @@ export function ChatsListScreen({ onOpenChat }: ChatsListScreenProps) {
                         const chatPhoto = participant.profilePhoto || participant.photos?.[0]?.url;
                         const lastMsg = chat.lastMessage?.content || 'No messages yet';
                         const timeAgo = chat.updatedAt ? new Date(chat.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                        const chatId = chat._id || chat.id;
+                        const isSelected = selectedChats.includes(chatId);
 
                         return (
                             <TouchableOpacity
-                                key={chat._id || chat.id}
-                                style={styles.chatItem}
-                                onPress={() => onOpenChat(chat._id || chat.id)}
+                                key={chatId}
+                                style={[styles.chatItem, isSelected && styles.chatItemSelected]}
+                                onPress={() => handleChatPress(chatId)}
+                                onLongPress={() => handleLongPress(chatId)}
                             >
                                 <View style={styles.avatarContainer}>
                                     <Image source={{ uri: chatPhoto }} style={styles.avatar} />
-                                    {participant.online && <View style={styles.onlineBadge} />}
+                                    {(!selectionMode && participant.online) && <View style={styles.onlineBadge} />}
+                                    {selectionMode && (
+                                        <View style={styles.selectionCheckbox}>
+                                            <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+                                                {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                                            </View>
+                                        </View>
+                                    )}
                                 </View>
-
                                 <View style={styles.chatContent}>
                                     <View style={styles.chatHeader}>
                                         <Text style={styles.chatName}>{chatName}</Text>
                                         <Text style={styles.chatTime}>{timeAgo}</Text>
                                     </View>
-                                    <Text style={styles.chatMessage} numberOfLines={1}>
-                                        {lastMsg}
-                                    </Text>
-                                </View>
-
-                                {chat.unreadCount > 0 && (
-                                    <View style={styles.unreadBadge}>
-                                        <Text style={styles.unreadText}>{chat.unreadCount}</Text>
+                                    <View style={styles.chatHeader}>
+                                        <Text style={styles.chatMessage} numberOfLines={1}>
+                                            {lastMsg}
+                                        </Text>
+                                        {chat.unreadCount > 0 && (
+                                            <View style={styles.unreadBadge}>
+                                                <Text style={styles.unreadText}>{chat.unreadCount < 100 ? chat.unreadCount : '99+'}</Text>
+                                            </View>
+                                        )}
                                     </View>
-                                )}
-
-                                <TouchableOpacity style={styles.moreButton}>
-                                    <MoreVertical size={20} color="#9ca3af" />
-                                </TouchableOpacity>
+                                </View>
                             </TouchableOpacity>
                         );
                     })
                 )}
             </ScrollView>
+
+            <Modal
+                visible={showActionMenu}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowActionMenu(false)}
+            >
+                <TouchableOpacity
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowActionMenu(false)}
+                >
+                    <View style={styles.actionMenu}>
+                        <TouchableOpacity style={styles.actionMenuItem} onPress={handleDeleteChat}>
+                            <Trash2 size={20} color="#ef4444" />
+                            <Text style={[styles.actionMenuText, { color: '#ef4444' }]}>{t('chats.deleteChat')}</Text>
+                        </TouchableOpacity>
+                        <View style={styles.actionMenuDivider} />
+                        <TouchableOpacity style={styles.actionMenuItem} onPress={handleBlockUser}>
+                            <Ban size={20} color="#ef4444" />
+                            <Text style={[styles.actionMenuText, { color: '#ef4444' }]}>{t('chats.blockUser')}</Text>
+                        </TouchableOpacity>
+                        <View style={styles.actionMenuDivider} />
+                        <TouchableOpacity style={styles.actionMenuItem} onPress={handleArchiveChat}>
+                            <Archive size={20} color="#6b7280" />
+                            <Text style={styles.actionMenuText}>{t('chats.archiveChat')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
         </CustomSafeAreaView>
     );
 }
-
-

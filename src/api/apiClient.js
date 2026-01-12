@@ -1,6 +1,7 @@
 import axios from 'axios';
 import Url from '../utils/url';
 import { StorageService } from '../utils/storage';
+import { logoutUser } from '../redux/actions';
 
 const BaseUrl = `${Url.BaseUrl}/api/v1/`
 
@@ -33,10 +34,13 @@ apiClient.interceptors.response.use(
             console.warn(`time taken ${response?.config?.url?.replace(BaseUrl, '')}`, timeTaken + " seconds");
         }
         return response
-    },
-    (error) => {
+    }, async (error) => {
         var message = `${error?.response?.config?.url?.replace(BaseUrl, '')} => ${error?.response?.status || error?.response?.data?.status} => ${error?.response?.config?.method} => ${error?.response?.config?.params ? JSON.stringify(error?.response?.config?.params) : ""} => ${error?.response?.data ? JSON.stringify(error?.response?.data) : ""}`;
         console.error(message)
+        if (error?.response?.status === 401) {
+            var token = await StorageService.getAccessToken();
+            if (token) { setTimeout(async () => { logoutUser(error) }, 400) }
+        }
         return Promise.reject(error);
     }
 );

@@ -3,6 +3,7 @@
  */
 
 import App from './App';
+import './gesture-handler';
 import { AppRegistry } from 'react-native';
 import { name as appName } from './app.json';
 import { enGB, registerTranslation } from 'react-native-paper-dates';

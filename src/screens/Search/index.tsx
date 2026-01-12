@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Image, StatusBar, ActivityIndicator } from "react-native";
-import { Search, SlidersHorizontal, X, Heart, MapPin, Briefcase, GraduationCap } from "lucide-react-native";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { View, Text, TextInput, TouchableOpacity, Image, ActivityIndicator, FlatList } from "react-native";
+import { Search, SlidersHorizontal, Heart, MapPin, Briefcase, GraduationCap } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { CustomSafeAreaView } from '../../components/CustomSafeAreaView';
-import { mockProfiles } from "../../data/mockProfiles";
 import { styles } from './styles';
-import { advancedSearch, quickSearch } from '../../redux/actions/search';
-import { shortlistMatch } from '../../redux/actions/matches';
+import { advancedSearch } from '../../redux/actions/search';
 import { showToast } from '../../utils/toast';
 import { SkeletonSearchList } from '../../components/skeletons';
+import { FilterModal } from '../../components/common/FilterModal';
+import { sendInterest } from "../../redux/actions";
+
+const PAGE_SIZE = 20;
 
 interface SearchScreenProps {
     onBack: () => void;
@@ -17,112 +19,190 @@ interface SearchScreenProps {
 
 export function SearchScreen({ onViewProfile }: SearchScreenProps) {
     const { t } = useTranslation();
-    const [searchQuery, setSearchQuery] = useState("");
-    const [showFilters, setShowFilters] = useState(false);
-    const [savedProfiles, setSavedProfiles] = useState<string[]>([]);
-    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
-    const [searching, setSearching] = useState(false);
-
-    const [filters, setFilters] = useState({
-        ageMin: "",
-        ageMax: "",
-        city: "",
-        maritalStatus: "",
-        diet: "",
-        education: "",
-        occupation: "",
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isFetchingMore, setIsFetchingMore] = useState(false);
+    const [showFilterModal, setShowFilterModal] = useState(false);
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [appliedFilters, setAppliedFilters] = useState<any>({
+        ageMin: "18",
+        ageMax: "50",
+        maritalStatus: ["never_married"],
     });
 
-    useEffect(() => {
-        const delaySearch = setTimeout(() => {
-            if (searchQuery.trim()) {
-                handleQuickSearch();
-            } else {
-                setSearchResults([]);
-            }
-        }, 500);
+    const appliedFiltersNumber = useMemo(() => {
+        var filers = []
+        if (appliedFilters?.ageMin) filers.push('ageMin')
+        if (appliedFilters?.ageMax) filers.push('ageMax')
+        if (appliedFilters?.heightMin) filers.push('heightMin')
+        if (appliedFilters?.heightMax) filers.push('heightMax')
+        if (Array.isArray(appliedFilters?.maritalStatus) && appliedFilters?.maritalStatus?.length > 0) filers.push('maritalStatus')
+        if (Array.isArray(appliedFilters?.education) && appliedFilters?.education?.length > 0) filers.push('education')
+        if (Array.isArray(appliedFilters?.location) && appliedFilters?.location?.length > 0) filers.push('location')
+        return filers.length
+    }, [appliedFilters])
 
-        return () => clearTimeout(delaySearch);
-    }, [searchQuery]);
-
-    const handleQuickSearch = async () => {
-        try {
-            setSearching(true);
-            const response = await quickSearch(searchQuery.trim());
-            if (response.success && response.data?.profiles) {
-                setSearchResults(response.data.profiles);
-            } else {
-                setSearchResults([]);
-            }
-        } catch (error) {
-            setSearchResults([]);
-        } finally {
-            setSearching(false);
+    const filterListByQuery = useMemo(() => {
+        let listData = Array.isArray(searchResults) ? [...searchResults] : []
+        if (searchQuery) {
+            listData = listData.filter((item: any) => item?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()))
         }
-    };
+        return listData
+    }, [searchQuery, searchResults])
 
-    const handleAdvancedSearch = async () => {
-        try {
+    const fetchAdvancedResults = async ({ page: pageToLoad = 1, filtersOverride }: { page?: number; filtersOverride?: any } = {}) => {
+        const filtersToUse = filtersOverride
+        const isInitialLoad = pageToLoad === 1;
+
+        if (isInitialLoad) {
             setLoading(true);
-            const searchFilters: any = {};
-
-            if (filters.ageMin) searchFilters.ageMin = parseInt(filters.ageMin.trim());
-            if (filters.ageMax) searchFilters.ageMax = parseInt(filters.ageMax.trim());
-            if (filters.city) searchFilters.location = [filters.city.trim()];
-            if (filters.education) searchFilters.education = [filters.education.trim()];
-            if (filters.occupation) searchFilters.occupation = filters.occupation.trim();
-            if (filters.maritalStatus) searchFilters.maritalStatus = [filters.maritalStatus.trim()];
-            if (filters.diet) searchFilters.diet = filters.diet.trim();
-
-            const response = await advancedSearch(searchFilters);
-            if (response.success && response.data?.profiles) {
-                setSearchResults(response.data.profiles);
-                setShowFilters(false);
-                showToast(`Found ${response.data.profiles.length} profiles`, { type: 'success' });
-            } else {
-                setSearchResults([]);
-                showToast('No profiles found', { type: 'info' });
-            }
-        } catch (error: any) {
-            showToast(error?.message || 'Search failed', { type: 'error' });
-        } finally {
-            setLoading(false);
+            setHasMore(true);
+            if (filtersOverride) { setSearchResults([]) }
+        } else {
+            setIsFetchingMore(true);
         }
+
+        try {
+            const response = await advancedSearch({ ...filtersToUse, page: pageToLoad, limit: PAGE_SIZE });
+            if (!response?.success) {
+                throw new Error(response?.message || 'Search failed');
+            }
+
+            const profiles = response?.data?.users || [];
+            setSearchResults(prev => (isInitialLoad ? profiles : [...prev, ...profiles]));
+            setPage(pageToLoad);
+
+            const moreAvailable = response?.data?.pagination?.totalPages > pageToLoad;
+            setHasMore(moreAvailable);
+
+            if (isInitialLoad) { if (profiles.length === 0) { showToast(t('search.noResults'), { type: 'info' }) } }
+        } catch (error: any) {
+            setHasMore(false);
+            if (isInitialLoad) { setSearchResults([]) }
+            showToast(error?.response?.data?.message || t('search.searchFailed'), { type: 'error' });
+        } finally {
+            if (isInitialLoad) {
+                setLoading(false);
+            } else {
+                setIsFetchingMore(false);
+            }
+        }
+    }
+
+
+    const handleApplyFilters = (filters: any) => {
+        setHasMore(true);
+        setShowFilterModal(false);
+        setAppliedFilters(filters);
+        fetchAdvancedResults({ page: 1, filtersOverride: filters });
     };
 
     const handleToggleSave = async (profileId: string) => {
-        const isSaved = savedProfiles.includes(profileId);
-
-        if (!isSaved) {
-            try {
-                await shortlistMatch(profileId);
-                setSavedProfiles(prev => [...prev, profileId]);
-                showToast('Profile shortlisted', { type: 'success' });
-            } catch (error) {
-                showToast('Failed to shortlist', { type: 'error' });
+        try {
+            const response = await sendInterest(profileId, 'Interested in connecting with you!');
+            if (response.success) {
+                fetchAdvancedResults({ page: page, filtersOverride: appliedFilters });
+                showToast(t('interests.sentSuccess'), { type: 'success' });
             }
-        } else {
-            setSavedProfiles(prev => prev.filter(id => id !== profileId));
+        } catch (error: any) {
+            showToast(error?.response?.data?.message || t('interests.sendFailed'), { type: 'error' });
         }
+    }
+
+    const handleLoadMore = () => {
+        if (loading || isFetchingMore || !hasMore) return;
+        fetchAdvancedResults({ page: page + 1, filtersOverride: appliedFilters });
     };
 
-    const handleClearFilters = () => {
-        setFilters({
-            ageMin: "",
-            ageMax: "",
-            city: "",
-            maritalStatus: "",
-            diet: "",
-            education: "",
-            occupation: "",
-        });
-        setSearchResults([]);
+    const renderProfile = ({ item }: { item: any }) => (
+        <TouchableOpacity
+            style={styles.profileCard}
+            onPress={() => onViewProfile(item.id)}
+        >
+            <Image
+                source={{ uri: item.profilePhoto || item.photos?.find((p: any) => p.isProfilePhoto)?.url || item.photos?.[0]?.url }}
+                style={styles.profileImage}
+            />
+
+            <View style={styles.profileInfo}>
+                <View style={styles.profileHeader}>
+                    <View style={styles.profileNameRow}>
+                        <Text style={styles.profileName}>{item.name || item.profile?.fullName}, {item.age || item.profile?.age}</Text>
+                        {(item.verified || item.profile?.isProfileVerified) && (
+                            <View style={styles.verifiedBadge}>
+                                <Text style={styles.verifiedText}>✓</Text>
+                            </View>
+                        )}
+                    </View>
+                    <TouchableOpacity disabled={item?.hasInterestSent} onPress={() => handleToggleSave(item.id)}>
+                        <Heart
+                            size={22}
+                            color={item?.hasInterestSent ? "#f97316" : "#d1d5db"}
+                            fill={item?.hasInterestSent ? "#f97316" : "none"}
+                        />
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.profileDetail}>
+                    <MapPin size={14} color="#9ca3af" />
+                    <Text style={styles.profileDetailText}>{item?.profile?.currentCity}, {item.profile?.currentState}</Text>
+                </View>
+
+                <View style={styles.profileDetail}>
+                    <GraduationCap size={14} color="#9ca3af" />
+                    <Text style={styles.profileDetailText}>{item.profile?.education}</Text>
+                </View>
+
+                <View style={styles.profileDetail}>
+                    <Briefcase size={14} color="#9ca3af" />
+                    <Text style={styles.profileDetailText}>{item?.profile?.occupation}</Text>
+                </View>
+
+                <View style={styles.profileFooter}>
+                    {(item.online || item.profile?.isOnline) && (<View style={styles.onlineDot} />)}
+                    <View style={styles.profileTags}>
+                        <Text style={styles.heightTag}>{item.profile?.height} cm</Text>
+                    </View>
+                    <View style={styles.profileTags}>
+                        <Text style={styles.heightTag}>{item.profile?.weight} kg</Text>
+                    </View>
+                    {item?.matchScore && (
+                        <View style={styles.matchBadgeContainer}>
+                            <Text style={styles.matchText}>{item?.matchScore}% {t('profile.match')}</Text>
+                        </View>
+                    )}
+                </View>
+            </View>
+        </TouchableOpacity>
+    )
+
+    const renderListFooter = () => {
+        if (isFetchingMore) {
+            return (
+                <View style={styles.listFooter}>
+                    <ActivityIndicator size="small" color="#f97316" />
+                </View>
+            );
+        }
+        if (!hasMore && searchResults.length > 0) {
+            return (
+                <View style={styles.listFooter}>
+                    <Text style={styles.listFooterText}>{t('search.noMoreResults') || 'No more profiles'}</Text>
+                </View>
+            );
+        }
+        return null;
     };
 
-    const displayProfiles = searchResults.length > 0 ? searchResults : mockProfiles;
+    const emptyComponent = !loading ? (
+        <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>{t('search.noResults')}</Text>
+        </View>
+    ) : null;
 
-    const activeFilterCount = Object.values(filters).filter(v => v !== "").length;
+    useEffect(() => { fetchAdvancedResults({ page: 1, filtersOverride: appliedFilters }); }, []);
 
     return (
         <CustomSafeAreaView
@@ -140,19 +220,19 @@ export function SearchScreen({ onViewProfile }: SearchScreenProps) {
                             <TextInput
                                 value={searchQuery}
                                 onChangeText={setSearchQuery}
-                                placeholder={t('search.placeholder')}
+                                placeholder={t('search.name')}
                                 style={styles.searchInput}
                                 placeholderTextColor="#9ca3af"
                             />
                         </View>
                         <TouchableOpacity
-                            onPress={() => setShowFilters(!showFilters)}
+                            onPress={() => setShowFilterModal(true)}
                             style={styles.filterButton}
                         >
                             <SlidersHorizontal size={18} color="#ffffff" />
-                            {activeFilterCount > 0 && (
+                            {appliedFiltersNumber > 0 && (
                                 <View style={styles.filterBadge}>
-                                    <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
+                                    <Text style={styles.filterBadgeText}>{appliedFiltersNumber}</Text>
                                 </View>
                             )}
                         </TouchableOpacity>
@@ -160,155 +240,35 @@ export function SearchScreen({ onViewProfile }: SearchScreenProps) {
                 </View>
             )}
         >
-            {/* Filter Panel */}
-            {showFilters && (
-                <View style={styles.filterPanel}>
-                    <View style={styles.filterHeader}>
-                        <Text style={styles.filterTitle}>{t('search.filters')}</Text>
-                        <TouchableOpacity onPress={handleClearFilters}>
-                            <Text style={styles.clearButton}>{t('search.clearFilters')}</Text>
-                        </TouchableOpacity>
-                    </View>
+            <FilterModal
+                visible={showFilterModal}
+                onClose={() => setShowFilterModal(false)}
+                onApply={handleApplyFilters}
+                initialFilters={appliedFilters}
+            />
 
-                    <View style={styles.filterContent}>
-                        <TouchableOpacity
-                            onPress={handleAdvancedSearch}
-                            disabled={loading}
-                            style={[styles.filterInput, { backgroundColor: '#f97316', marginBottom: 16, alignItems: 'center', justifyContent: 'center', height: 44 }]}
-                        >
-                            {loading ? (
-                                <ActivityIndicator color="#ffffff" />
-                            ) : (
-                                <Text style={{ color: '#ffffff', fontWeight: '600' }}>Apply Filters</Text>
-                            )}
-                        </TouchableOpacity>
 
-                        <Text style={styles.filterLabel}>{t('search.ageRange')}</Text>
-                        <View style={styles.filterRow}>
-                            <TextInput
-                                placeholder={t('search.min')}
-                                value={filters.ageMin}
-                                onChangeText={(value) => setFilters({ ...filters, ageMin: value })}
-                                keyboardType="number-pad"
-                                style={styles.filterInput}
-                                placeholderTextColor="#9ca3af"
-                            />
-                            <TextInput
-                                placeholder={t('search.max')}
-                                value={filters.ageMax}
-                                onChangeText={(value) => setFilters({ ...filters, ageMax: value })}
-                                keyboardType="number-pad"
-                                style={styles.filterInput}
-                                placeholderTextColor="#9ca3af"
-                            />
-                        </View>
-
-                        <Text style={styles.filterLabel}>{t('search.city')}</Text>
-                        <TextInput
-                            placeholder={t('search.enterCity')}
-                            value={filters.city}
-                            onChangeText={(value) => setFilters({ ...filters, city: value })}
-                            style={[styles.filterInput, { flex: 1 }]}
-                            placeholderTextColor="#9ca3af"
-                        />
-
-                        <Text style={styles.filterLabel}>{t('search.education')}</Text>
-                        <TextInput
-                            placeholder={t('search.educationPlaceholder')}
-                            value={filters.education}
-                            onChangeText={(value) => setFilters({ ...filters, education: value })}
-                            style={[styles.filterInput, { flex: 1 }]}
-                            placeholderTextColor="#9ca3af"
-                        />
-
-                        <Text style={styles.filterLabel}>{t('search.occupation')}</Text>
-                        <TextInput
-                            placeholder={t('search.occupationPlaceholder')}
-                            value={filters.occupation}
-                            onChangeText={(value) => setFilters({ ...filters, occupation: value })}
-                            style={[styles.filterInput, { flex: 1 }]}
-                            placeholderTextColor="#9ca3af"
-                        />
-                    </View>
-                </View>
-            )}
-
-            {/* Results */}
             <View style={styles.resultsHeader}>
                 <Text style={styles.resultsText}>
-                    {searching ? 'Searching...' : `${displayProfiles.length} ${t('search.profilesFound')}`}
+                    {`${filterListByQuery?.length || 0} ${t('search.profilesFound')}`}
                 </Text>
             </View>
 
-            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-                {loading || searching ? (
-                    <SkeletonSearchList count={5} />
-                ) : displayProfiles.length > 0 ? (
-                    displayProfiles.map((profile) => (
-                        <TouchableOpacity
-                            key={profile.id}
-                            style={styles.profileCard}
-                            onPress={() => onViewProfile(profile.id)}
-                        >
-                            <Image source={{ uri: profile.profilePhoto || profile.photos?.[0]?.url }} style={styles.profileImage} />
-
-                            <View style={styles.profileInfo}>
-                                <View style={styles.profileHeader}>
-                                    <View style={styles.profileNameRow}>
-                                        <Text style={styles.profileName}>{profile.name || profile.fullName}, {profile.age}</Text>
-                                        {profile.verified && (
-                                            <View style={styles.verifiedBadge}>
-                                                <Text style={styles.verifiedText}>✓</Text>
-                                            </View>
-                                        )}
-                                    </View>
-                                    <TouchableOpacity onPress={() => handleToggleSave(profile.id)}>
-                                        <Heart
-                                            size={22}
-                                            color={savedProfiles.includes(profile.id) ? "#f97316" : "#d1d5db"}
-                                            fill={savedProfiles.includes(profile.id) ? "#f97316" : "none"}
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-
-                                <View style={styles.profileDetail}>
-                                    <MapPin size={14} color="#9ca3af" />
-                                    <Text style={styles.profileDetailText}>{profile.city}</Text>
-                                </View>
-
-                                <View style={styles.profileDetail}>
-                                    <GraduationCap size={14} color="#9ca3af" />
-                                    <Text style={styles.profileDetailText}>{profile.education}</Text>
-                                </View>
-
-                                <View style={styles.profileDetail}>
-                                    <Briefcase size={14} color="#9ca3af" />
-                                    <Text style={styles.profileDetailText}>{profile.occupation}</Text>
-                                </View>
-
-                                <View style={styles.profileFooter}>
-                                    {profile.online && (
-                                        <View style={styles.onlineDot} />
-                                    )}
-                                    <View style={styles.profileTags}>
-                                        <Text style={styles.heightTag}>{profile.height}</Text>
-                                        <Text style={styles.dietTag}>{profile.diet}</Text>
-                                    </View>
-                                    <View style={styles.matchBadgeContainer}>
-                                        <Text style={styles.matchText}>{profile.matchPercentage}% {t('profile.match')}</Text>
-                                    </View>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                    ))
-                ) : (
-                    <View style={styles.emptyState}>
-                        <Text style={styles.emptyText}>{t('search.noResults')}</Text>
-                    </View>
-                )}
-            </ScrollView>
-        </CustomSafeAreaView >
+            {loading ? (
+                <SkeletonSearchList count={5} />
+            ) : (
+                <FlatList
+                    data={filterListByQuery}
+                    keyExtractor={(item) => String(item.id)}
+                    renderItem={renderProfile}
+                    contentContainerStyle={styles.scrollContent}
+                    ListEmptyComponent={emptyComponent}
+                    ListFooterComponent={renderListFooter}
+                    onEndReached={handleLoadMore}
+                    onEndReachedThreshold={0.4}
+                    refreshing={loading}
+                />
+            )}
+        </CustomSafeAreaView>
     );
 }
-
-

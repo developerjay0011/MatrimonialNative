@@ -54,7 +54,7 @@ export const createOrUpdateProfile = (profileData: any, callback?: (response: an
             return response.data;
         } catch (error: any) {
             if (callback) { callback(error) }
-            showToast(error?.message || 'Failed to update profile', { type: 'error' });
+            showToast(error?.response?.data?.message || 'Failed to update profile', { type: 'error' });
             throw error;
         }
     }
@@ -73,7 +73,7 @@ export const updateFamilyDetails = async (familyData: any) => {
 
         return response.data;
     } catch (error: any) {
-        showToast(error?.message || 'Failed to update family details', { type: 'error' });
+        showToast(error?.response?.data?.message || 'Failed to update family details', { type: 'error' });
         throw error;
     }
 };

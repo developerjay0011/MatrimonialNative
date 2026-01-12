@@ -1,6 +1,7 @@
 export type RootStackParamList = {
     Splash: undefined;
     Login: undefined;
+    ForgotPassword: undefined;
     Registration: undefined;
     Home: undefined;
     ProfileDetail: { profileId: string };

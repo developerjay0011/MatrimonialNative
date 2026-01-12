@@ -17,15 +17,14 @@ interface FamilyInfoScreenProps {
     onBack: () => void;
 }
 
-const FAMILY_TYPE_OPTIONS = [
-    { label: 'Nuclear Family', value: 'nuclear' },
-    { label: 'Joint Family', value: 'joint' },
-];
-
 export function FamilyInfoScreen({ onBack }: FamilyInfoScreenProps) {
     const { t } = useTranslation();
     const isFocused = useIsFocused();
     const dispatch = useAppDispatch();
+    const FAMILY_TYPE_OPTIONS = [
+        { label: t('familyInfo.nuclearFamily'), value: 'nuclear' },
+        { label: t('familyInfo.jointFamily'), value: 'joint' },
+    ];
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({
@@ -75,39 +74,39 @@ export function FamilyInfoScreen({ onBack }: FamilyInfoScreenProps) {
         const newErrors: Record<string, string> = {};
 
         if (!formData.fatherName.trim()) {
-            newErrors.fatherName = "Father's name is required";
+            newErrors.fatherName = t('familyInfo.errors.fatherNameRequired');
         } else if (formData.fatherName.trim().length < 2) {
-            newErrors.fatherName = "Father's name must be at least 2 characters";
+            newErrors.fatherName = t('familyInfo.errors.fatherNameMin');
         }
 
         if (!formData.motherName.trim()) {
-            newErrors.motherName = "Mother's name is required";
+            newErrors.motherName = t('familyInfo.errors.motherNameRequired');
         } else if (formData.motherName.trim().length < 2) {
-            newErrors.motherName = "Mother's name must be at least 2 characters";
+            newErrors.motherName = t('familyInfo.errors.motherNameMin');
         }
 
         if (!formData.fatherOccupation.trim()) {
-            newErrors.fatherOccupation = "Father's occupation is required";
+            newErrors.fatherOccupation = t('familyInfo.errors.fatherOccupationRequired');
         }
 
         if (!formData.motherOccupation.trim()) {
-            newErrors.motherOccupation = "Mother's occupation is required";
+            newErrors.motherOccupation = t('familyInfo.errors.motherOccupationRequired');
         }
 
         if (!formData.brothers.trim()) {
-            newErrors.brothers = 'Number of brothers is required';
+            newErrors.brothers = t('familyInfo.errors.brothersRequired');
         } else if (parseInt(formData.brothers) < 0 || parseInt(formData.brothers) > 20) {
-            newErrors.brothers = 'Please enter a valid number (0-20)';
+            newErrors.brothers = t('familyInfo.errors.brothersInvalid');
         }
 
         if (!formData.sisters.trim()) {
-            newErrors.sisters = 'Number of sisters is required';
+            newErrors.sisters = t('familyInfo.errors.sistersRequired');
         } else if (parseInt(formData.sisters) < 0 || parseInt(formData.sisters) > 20) {
-            newErrors.sisters = 'Please enter a valid number (0-20)';
+            newErrors.sisters = t('familyInfo.errors.sistersInvalid');
         }
 
         if (!formData.familyType) {
-            newErrors.familyType = 'Family type is required';
+            newErrors.familyType = t('familyInfo.errors.familyTypeRequired');
         }
 
         setErrors(newErrors);
@@ -116,7 +115,7 @@ export function FamilyInfoScreen({ onBack }: FamilyInfoScreenProps) {
 
     const handleSave = async () => {
         if (!validateForm()) {
-            showToast('Please fix the errors before saving', { type: 'error' });
+            showToast(t('familyInfo.errors.fixErrorsBeforeSaving'), { type: 'error' });
             return;
         }
 
@@ -134,13 +133,13 @@ export function FamilyInfoScreen({ onBack }: FamilyInfoScreenProps) {
 
             const response = await updateFamilyDetails(familyData);
             if (response.success) {
-                showToast('Family information updated successfully!', { type: 'success' });
+                showToast(t('familyInfo.updatedSuccess'), { type: 'success' });
                 onBack();
             } else {
-                showToast(response.message || 'Failed to update family information', { type: 'error' });
+                showToast(response.message || t('familyInfo.updateFailed'), { type: 'error' });
             }
         } catch (error: any) {
-            showToast(error?.message || 'Failed to update family information', { type: 'error' });
+            showToast(error?.response?.data?.message || t('familyInfo.updateFailed'), { type: 'error' });
         } finally {
             setSaving(false);
         }
@@ -160,7 +159,7 @@ export function FamilyInfoScreen({ onBack }: FamilyInfoScreenProps) {
                     <TouchableOpacity onPress={onBack} style={styles.backButton}>
                         <ArrowLeft size={24} color="#ffffff" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Family Information</Text>
+                    <Text style={styles.headerTitle}>{t('familyInfo.title')}</Text>
                     <TouchableOpacity
                         style={styles.saveButton}
                         onPress={handleSave}
@@ -169,7 +168,7 @@ export function FamilyInfoScreen({ onBack }: FamilyInfoScreenProps) {
                         {saving ? (
                             <ActivityIndicator size="small" color="#ffffff" />
                         ) : (
-                            <Text style={styles.saveButtonText}>Save</Text>
+                            <Text style={styles.saveButtonText}>{t('common.save')}</Text>
                         )}
                     </TouchableOpacity>
                 </LinearGradient>
@@ -182,41 +181,41 @@ export function FamilyInfoScreen({ onBack }: FamilyInfoScreenProps) {
                     <View style={{ paddingHorizontal: 20, paddingVertical: 20 }}>
                         {/* Parents Information */}
                         <FormInput
-                            label="Father's Name"
+                            label={t('familyInfo.fatherNameLabel')}
                             value={formData.fatherName}
                             onChangeText={(text) => updateField('fatherName', text)}
-                            placeholder="Enter father's name"
+                            placeholder={t('familyInfo.fatherNamePlaceholder')}
                             error={errors.fatherName}
                         />
 
                         <FormInput
-                            label="Father's Occupation"
+                            label={t('familyInfo.fatherOccupationLabel')}
                             value={formData.fatherOccupation}
                             onChangeText={(text) => updateField('fatherOccupation', text)}
-                            placeholder="e.g., Business, Service, Retired"
+                            placeholder={t('familyInfo.fatherOccupationPlaceholder')}
                             error={errors.fatherOccupation}
                         />
 
                         <FormInput
-                            label="Mother's Name"
+                            label={t('familyInfo.motherNameLabel')}
                             value={formData.motherName}
                             onChangeText={(text) => updateField('motherName', text)}
-                            placeholder="Enter mother's name"
+                            placeholder={t('familyInfo.motherNamePlaceholder')}
                             error={errors.motherName}
                         />
 
                         <FormInput
-                            label="Mother's Occupation"
+                            label={t('familyInfo.motherOccupationLabel')}
                             value={formData.motherOccupation}
                             onChangeText={(text) => updateField('motherOccupation', text)}
-                            placeholder="e.g., Housewife, Service, Business"
+                            placeholder={t('familyInfo.motherOccupationPlaceholder')}
                             error={errors.motherOccupation}
                         />
 
                         <View style={styles.row}>
                             <View style={styles.halfWidth}>
                                 <FormInput
-                                    label="Brothers"
+                                    label={t('familyInfo.brothersLabel')}
                                     value={formData.brothers}
                                     onChangeText={(text) => updateField('brothers', text.replace(/\D/g, ''))}
                                     placeholder="0"
@@ -226,7 +225,7 @@ export function FamilyInfoScreen({ onBack }: FamilyInfoScreenProps) {
                             </View>
                             <View style={styles.halfWidth}>
                                 <FormInput
-                                    label="Sisters"
+                                    label={t('familyInfo.sistersLabel')}
                                     value={formData.sisters}
                                     onChangeText={(text) => updateField('sisters', text.replace(/\D/g, ''))}
                                     placeholder="0"
@@ -237,10 +236,10 @@ export function FamilyInfoScreen({ onBack }: FamilyInfoScreenProps) {
                         </View>
 
                         <DropdownPickerInput
-                            label="Family Type"
+                            label={t('familyInfo.familyTypeLabel')}
                             value={formData.familyType}
                             onChange={(value) => updateField('familyType', value)}
-                            placeholder="Select family type"
+                            placeholder={t('familyInfo.familyTypePlaceholder')}
                             options={FAMILY_TYPE_OPTIONS}
                             error={errors.familyType}
                         />
