@@ -18,10 +18,7 @@ export const uploadPhoto = async (photo: any, isProfilePhoto: boolean = false) =
         });
         formData.append('isProfilePhoto', isProfilePhoto.toString());
 
-        const response = await postFormData(PHOTO_ENDPOINTS.UPLOAD_PHOTO, {
-            data: formData,
-            showConsole: true,
-        });
+        const response = await postFormData(PHOTO_ENDPOINTS.UPLOAD_PHOTO, { data: formData });
         showToast(response?.data?.message, { type: response?.data?.success ? 'success' : 'error' });
         return response.data;
     } catch (error: any) {
@@ -32,7 +29,7 @@ export const uploadPhoto = async (photo: any, isProfilePhoto: boolean = false) =
 
 export const getUserPhotos = async (userId: string) => {
     try {
-        const response = await getData(`${PHOTO_ENDPOINTS.GET_USER_PHOTOS}${userId}`, { showConsole: true });
+        const response = await getData(`${PHOTO_ENDPOINTS.GET_USER_PHOTOS}${userId}`);
         return response.data;
     } catch (error) {
         throw error;
@@ -41,7 +38,7 @@ export const getUserPhotos = async (userId: string) => {
 
 export const deletePhoto = async (photoId: string) => {
     try {
-        const response = await deleteData(`${PHOTO_ENDPOINTS.DELETE_PHOTO}${photoId}`, { showConsole: true });
+        const response = await deleteData(`${PHOTO_ENDPOINTS.DELETE_PHOTO}${photoId}`);
         if (response?.data) {
             showToast(response.data.message, { type: response.data.success ? 'success' : 'error' });
             return response.data;

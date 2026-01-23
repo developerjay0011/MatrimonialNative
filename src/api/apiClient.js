@@ -31,14 +31,15 @@ apiClient.interceptors.response.use(
         }
         var timeTaken = response?.config?.api_call_time ? (new Date() - response?.config?.api_call_time) / 1000 : ""
         if (timeTaken > 5) {
-            console.warn(`time taken ${response?.config?.url?.replace(BaseUrl, '')}`, timeTaken + " seconds");
+            console.warn(`time taken ${response?.config?.url?.replace(BaseUrl, '')}`, timeTaken + " seconds")
         }
         return response
     }, async (error) => {
         var message = `${error?.response?.config?.url?.replace(BaseUrl, '')} => ${error?.response?.status || error?.response?.data?.status} => ${error?.response?.config?.method} => ${error?.response?.config?.params ? JSON.stringify(error?.response?.config?.params) : ""} => ${error?.response?.data ? JSON.stringify(error?.response?.data) : ""}`;
-        console.error(message)
+        console.error(message, error)
         if (error?.response?.status === 401) {
             var token = await StorageService.getAccessToken();
+            console.log("error", token)
             if (token) { setTimeout(async () => { logoutUser(error) }, 400) }
         }
         return Promise.reject(error);

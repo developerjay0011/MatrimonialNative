@@ -10,10 +10,7 @@ const MATCH_ENDPOINTS = {
 
 export const getMatchSuggestions = async (page: number = 1, limit: number = 10) => {
     try {
-        const response = await getData(MATCH_ENDPOINTS.GET_SUGGESTIONS, {
-            params: { page, limit },
-            showConsole: true,
-        });
+        const response = await getData(MATCH_ENDPOINTS.GET_SUGGESTIONS, { params: { page, limit } });
         return response.data;
     } catch (error) {
         throw error;
@@ -22,7 +19,7 @@ export const getMatchSuggestions = async (page: number = 1, limit: number = 10) 
 
 export const getNearbyMatches = async () => {
     try {
-        const response = await getData(MATCH_ENDPOINTS.GET_NEARBY, { showConsole: true });
+        const response = await getData(MATCH_ENDPOINTS.GET_NEARBY);
         return response.data;
     } catch (error) {
         throw error;
@@ -31,14 +28,10 @@ export const getNearbyMatches = async () => {
 
 export const shortlistMatch = async (userId: string) => {
     try {
-        const response = await postData(`${MATCH_ENDPOINTS.SHORTLIST}${userId}/shortlist`, {
-            showConsole: true,
-        });
-
+        const response = await postData(`${MATCH_ENDPOINTS.SHORTLIST}${userId}/shortlist`);
         if (response?.data?.success) {
             showToast(response.data.message || 'Profile shortlisted', { type: 'success' });
         }
-
         return response.data;
     } catch (error: any) {
         showToast(error?.response?.data?.message || 'Failed to shortlist profile', { type: 'error' });
@@ -48,14 +41,10 @@ export const shortlistMatch = async (userId: string) => {
 
 export const removeShortlist = async (userId: string) => {
     try {
-        const response = await deleteData(`${MATCH_ENDPOINTS.SHORTLIST}${userId}/shortlist`, {
-            showConsole: true,
-        });
-
+        const response = await deleteData(`${MATCH_ENDPOINTS.SHORTLIST}${userId}/shortlist`);
         if (response?.data?.success) {
             showToast(response.data.message || 'Removed from shortlist', { type: 'success' });
         }
-
         return response.data;
     } catch (error: any) {
         showToast(error?.response?.data?.message || 'Failed to remove from shortlist', { type: 'error' });
@@ -65,7 +54,7 @@ export const removeShortlist = async (userId: string) => {
 
 export const getShortlistedProfiles = async () => {
     try {
-        const response = await getData(MATCH_ENDPOINTS.GET_SHORTLISTED, { showConsole: true });
+        const response = await getData(MATCH_ENDPOINTS.GET_SHORTLISTED);
         return response.data;
     } catch (error) {
         throw error;

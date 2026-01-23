@@ -322,7 +322,8 @@
         "login": "Login",
         "dontHaveAccount": "Don't have an account?",
         "register": "Register",
-        "createNewAccount": "Create New Account"
+        "createNewAccount": "Create New Account",
+        "signUp": "Sign Up"
     },
     "registration": {
         "title": "Create Account",

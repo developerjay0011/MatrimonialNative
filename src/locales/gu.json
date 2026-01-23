@@ -322,7 +322,8 @@
         "login": "લોગઇન",
         "dontHaveAccount": "એકાઉન્ટ નથી?",
         "register": "નોંધણી કરો",
-        "createNewAccount": "નવું એકાઉન્ટ બનાવો"
+        "createNewAccount": "નવું એકાઉન્ટ બનાવો",
+        "signUp": "એકાઉન્ટ બનાવો"
     },
     "registration": {
         "title": "એકાઉન્ટ બનાવો",

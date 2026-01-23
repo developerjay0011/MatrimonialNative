@@ -12,6 +12,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { CustomSafeAreaView } from '../../components/CustomSafeAreaView';
 import { styles } from './styles';
+import { FormInput } from '../../components/common/FormInput';
+import { ArrowLeftIcon } from 'lucide-react-native';
 
 interface ForgotPasswordScreenProps {
     navigation: any;
@@ -69,10 +71,8 @@ export function ForgotPasswordScreen({ navigation, onBack }: ForgotPasswordScree
                 <View style={styles.card}>
                     <Animated.View entering={FadeInRight}>
                         <View style={styles.sectionSpacing}>
-                            <Text style={styles.inputLabel}>
-                                {t('login.email')}
-                            </Text>
-                            <TextInput
+                            <FormInput
+                                label={t('login.email')}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                                 value={email}
@@ -99,6 +99,7 @@ export function ForgotPasswordScreen({ navigation, onBack }: ForgotPasswordScree
                             onPress={() => onBack ? onBack() : navigation.goBack()}
                             style={styles.backButton}
                         >
+                            <ArrowLeftIcon size={20} color="#6b7280" />
                             <Text style={styles.backButtonText}>{t('common.back', 'Back to Login')}</Text>
                         </TouchableOpacity>
                     </Animated.View>

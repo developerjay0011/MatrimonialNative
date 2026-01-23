@@ -96,8 +96,11 @@ export const styles = StyleSheet.create({
     },
 
     backButton: {
+        gap: 5,
         marginTop: 20,
         alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
     },
     backButtonText: {
         color: '#6b7280',

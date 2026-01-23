@@ -209,7 +209,7 @@ export function LoginScreen({ onRegister, onForgotPassword }: LoginScreenProps) 
                 <TouchableOpacity
                   onPress={handleSendOTP}
                   disabled={phoneNumber.length !== 10 || loading}
-                  style={[styles.primaryButton, (phoneNumber.length !== 10 || loading) && styles.primaryButtonDisabled]}
+                  style={[styles.primaryButton, { marginTop: 10 }, (phoneNumber.length !== 10 || loading) && styles.primaryButtonDisabled]}
                 >
                   {loading ? (
                     <ActivityIndicator color="#ffffff" />
@@ -277,33 +277,43 @@ export function LoginScreen({ onRegister, onForgotPassword }: LoginScreenProps) 
                 />
               </View>
 
-              <TouchableOpacity
-                onPress={handleEmailLogin}
-                disabled={!email || !password || loading}
-                style={[styles.primaryButton, (!email || !password || loading) && styles.primaryButtonDisabled]}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#ffffff" />
-                ) : (
-                  <Text style={styles.primaryButtonText}>{t('login.login')}</Text>
-                )}
-              </TouchableOpacity>
+              <View style={styles.buttonStack}>
+                <TouchableOpacity
+                  onPress={handleEmailLogin}
+                  disabled={!email || !password || loading}
+                  style={[styles.primaryButton, (!email || !password || loading) && styles.primaryButtonDisabled]}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#ffffff" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>{t('login.login')}</Text>
+                  )}
+                </TouchableOpacity>
 
-              <TouchableOpacity style={styles.centerAlign} onPress={onForgotPassword}>
-                <Text style={styles.linkText}>{t('login.forgotPassword')}</Text>
-              </TouchableOpacity>
+                <TouchableOpacity style={styles.centerAlign} onPress={onForgotPassword}>
+                  <Text style={styles.linkText}>{t('login.forgotPassword')}</Text>
+                </TouchableOpacity>
+              </View>
             </Animated.View>
           )}
         </View>
 
         {/* Register Link */}
         <Animated.View
-          entering={FadeInUp.delay(500)}
+          entering={FadeInUp.delay(600)}
           style={styles.registerContainer}
         >
-          <Text style={styles.registerPrompt}>{t('login.dontHaveAccount')}</Text>
-          <TouchableOpacity onPress={onRegister}>
-            <Text style={styles.registerLink}>{t('login.createNewAccount')}</Text>
+          <TouchableOpacity
+            onPress={onRegister}
+            activeOpacity={0.7}
+            style={styles.centerAlign}
+          >
+            <Text style={styles.registerPrompt}>
+              {t('login.dontHaveAccount')}{' '}
+              <Text style={styles.registerLink}>
+                {t('login.signUp')}
+              </Text>
+            </Text>
           </TouchableOpacity>
         </Animated.View>
       </ScrollView>

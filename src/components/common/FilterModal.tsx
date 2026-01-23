@@ -81,8 +81,6 @@ export function FilterModal({ visible, onClose, onApply, initialFilters }: Filte
             if (response.success && response.data) {
                 setFilterOptions(response.data);
             }
-        } catch (error) {
-            console.error('Failed to fetch filter options:', error);
         } finally {
             setLoading(false);
         }

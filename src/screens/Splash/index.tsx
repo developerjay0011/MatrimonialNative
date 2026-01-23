@@ -55,10 +55,10 @@ export function SplashScreen() {
 
     (async () => {
       const token = await StorageService.getAccessToken()
-      dispatch(getMyProfile());
-      console.log("token", token)
+      if (token) { dispatch(getMyProfile()); }
       setTimeout(() => {
         if (token) {
+          console.log("token", token)
           replace('Home')
         } else {
           replace('Login')

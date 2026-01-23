@@ -20,10 +20,7 @@ export interface SearchFilters {
 
 export const advancedSearch = async (filters: SearchFilters) => {
     try {
-        const response = await postData(SEARCH_ENDPOINTS.ADVANCED_SEARCH, {
-            data: filters,
-            showConsole: true,
-        });
+        const response = await postData(SEARCH_ENDPOINTS.ADVANCED_SEARCH, { data: filters });
         return response.data;
     } catch (error) {
         throw error;
@@ -32,7 +29,7 @@ export const advancedSearch = async (filters: SearchFilters) => {
 
 export const getFilterOptions = async () => {
     try {
-        const response = await getData(SEARCH_ENDPOINTS.GET_FILTER_OPTIONS, { showConsole: true });
+        const response = await getData(SEARCH_ENDPOINTS.GET_FILTER_OPTIONS);
         return response.data;
     } catch (error) {
         throw error;
@@ -41,10 +38,7 @@ export const getFilterOptions = async () => {
 
 export const quickSearch = async (query: string) => {
     try {
-        const response = await getData(SEARCH_ENDPOINTS.QUICK_SEARCH, {
-            params: { q: query },
-            showConsole: true,
-        });
+        const response = await getData(SEARCH_ENDPOINTS.QUICK_SEARCH, { params: { q: query } });
         return response.data;
     } catch (error) {
         throw error;

@@ -40,7 +40,7 @@ export const registerUser = (userData: any) => {
                 });
             }
 
-            const response = await postFormData(AUTH_ENDPOINTS.REGISTER, { data: formData, showConsole: true });
+            const response = await postFormData(AUTH_ENDPOINTS.REGISTER, { data: formData });
             showToast(response?.data?.message, { type: response?.data?.success ? 'success' : 'error' });
             userData?.setLoading(false);
 
@@ -56,10 +56,7 @@ export const registerUser = (userData: any) => {
 export const loginUser = (credentials: { email: string; password: string }, setLoading: (loading: boolean) => void) => {
     return async (dispatch: any) => {
         try {
-            const response = await postData(AUTH_ENDPOINTS.LOGIN, {
-                data: credentials,
-                showConsole: true,
-            });
+            const response = await postData(AUTH_ENDPOINTS.LOGIN, { data: credentials, });
 
             if (response?.data?.success && response?.data?.data) {
                 await StorageService.setAccessToken(response?.data?.data?.accessToken);
@@ -81,10 +78,7 @@ export const loginUser = (credentials: { email: string; password: string }, setL
 export const sendOTP = (phone: string, callback: (loading: boolean) => void) => {
     return async (dispatch: any) => {
         try {
-            const response = await postData(AUTH_ENDPOINTS.SEND_OTP, {
-                data: { phone },
-                showConsole: true,
-            });
+            const response = await postData(AUTH_ENDPOINTS.SEND_OTP, { data: { phone } });
             showToast(response?.data?.message, { type: response?.data?.success ? 'success' : 'error' });
             callback(response?.data);
             return response?.data;
@@ -99,10 +93,7 @@ export const sendOTP = (phone: string, callback: (loading: boolean) => void) => 
 export const verifyOTP = (phone: string, otp: string, callback: (loading: boolean) => void) => {
     return async (dispatch: any) => {
         try {
-            const response = await postData(AUTH_ENDPOINTS.VERIFY_OTP, {
-                data: { phone, otp },
-                showConsole: true,
-            });
+            const response = await postData(AUTH_ENDPOINTS.VERIFY_OTP, { data: { phone, otp } });
             if (response?.data?.success && response?.data?.data) {
                 await StorageService.setAccessToken(response?.data?.data?.tokens?.accessToken);
                 await StorageService.setRefreshToken(response?.data?.data?.tokens?.refreshToken);
@@ -123,16 +114,11 @@ export const verifyOTP = (phone: string, otp: string, callback: (loading: boolea
 export const refreshToken = async () => {
     try {
         const refreshToken = await StorageService.getRefreshToken();
-        const response = await postData(AUTH_ENDPOINTS.REFRESH_TOKEN, {
-            data: { refreshToken },
-            showConsole: true,
-        });
-
+        const response = await postData(AUTH_ENDPOINTS.REFRESH_TOKEN, { data: { refreshToken } });
         if (response?.data?.success && response?.data?.data) {
             await StorageService.setAccessToken(response?.data?.data?.accessToken);
             await StorageService.setRefreshToken(response?.data?.data?.refreshToken);
         }
-
         return response?.data;
     } catch (error) {
         throw error;
@@ -142,14 +128,9 @@ export const refreshToken = async () => {
 export const logoutUser = async () => {
     try {
         const refreshToken = await StorageService.getRefreshToken();
-        const response = await postData(AUTH_ENDPOINTS.LOGOUT, {
-            data: { refreshToken },
-            showConsole: true,
-        });
-
+        const response = await postData(AUTH_ENDPOINTS.LOGOUT, { data: { refreshToken } });
         await StorageService.clearAuth();
         reset('Login' as never);
-
         return response?.data;
     } catch (error) {
         await StorageService.clearAuth();
@@ -162,14 +143,9 @@ export const logoutUser = async () => {
 export const deactivateUser = async () => {
     try {
         const refreshToken = await StorageService.getRefreshToken();
-        const response = await postData(AUTH_ENDPOINTS.LOGOUT, {
-            data: { refreshToken },
-            showConsole: true,
-        });
-
+        const response = await postData(AUTH_ENDPOINTS.LOGOUT, { data: { refreshToken } });
         await StorageService.clearAuth();
         reset('Login' as never);
-
         return response?.data;
     } catch (error) {
         await StorageService.clearAuth();

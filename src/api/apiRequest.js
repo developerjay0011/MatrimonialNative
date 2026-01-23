@@ -35,7 +35,6 @@ export const postFormData = async (url, params = {}) => {
     if (params.data?._parts) {
         params.data?._parts?.forEach(([key, value]) => { formData.append(key, value) });
     }
-    console.log('formData', formData, endPoint);
     return apiClient.postForm(endPoint, formData, headers);
 }
 

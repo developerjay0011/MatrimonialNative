@@ -7,6 +7,8 @@ export const styles = StyleSheet.create({
     },
     scrollContent: {
         flexGrow: 1,
+        justifyContent: "space-between",
+        paddingBottom: 20
     },
 
     headerWrapper: {

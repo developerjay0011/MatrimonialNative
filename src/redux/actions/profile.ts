@@ -14,7 +14,7 @@ const PROFILE_ENDPOINTS = {
 export const getMyProfile = (callback?: (response: any) => void) => {
     return async (dispatch: any) => {
         try {
-            const response = await getData(PROFILE_ENDPOINTS.GET_MY_PROFILE, { showConsole: true });
+            const response = await getData(PROFILE_ENDPOINTS.GET_MY_PROFILE);
             dispatch({
                 type: PROFILE_DETAILS, payload: {
                     photos: Array.isArray(response?.data?.data?.photos) ? response?.data?.data?.photos : [],
@@ -30,7 +30,7 @@ export const getMyProfile = (callback?: (response: any) => void) => {
 
 export const getUserProfile = async (userId: string) => {
     try {
-        const response = await getData(`${PROFILE_ENDPOINTS.GET_USER_PROFILE}${userId}`, { showConsole: true });
+        const response = await getData(`${PROFILE_ENDPOINTS.GET_USER_PROFILE}${userId}`);
         return response.data;
     } catch (error) {
         throw error;
@@ -40,11 +40,7 @@ export const getUserProfile = async (userId: string) => {
 export const createOrUpdateProfile = (profileData: any, callback?: (response: any) => void) => {
     return async (dispatch: any) => {
         try {
-            const response = await postData(PROFILE_ENDPOINTS.CREATE_UPDATE_PROFILE, {
-                data: profileData,
-                showConsole: true,
-            });
-
+            const response = await postData(PROFILE_ENDPOINTS.CREATE_UPDATE_PROFILE, { data: profileData });
             if (response?.data?.success) {
                 goBack()
                 dispatch(getMyProfile())
@@ -62,11 +58,7 @@ export const createOrUpdateProfile = (profileData: any, callback?: (response: an
 
 export const updateFamilyDetails = async (familyData: any) => {
     try {
-        const response = await putData(PROFILE_ENDPOINTS.UPDATE_FAMILY, {
-            data: familyData,
-            showConsole: true,
-        });
-
+        const response = await putData(PROFILE_ENDPOINTS.UPDATE_FAMILY, { data: familyData });
         if (response?.data?.success) {
             showToast(response.data.message, { type: 'success' });
         }
